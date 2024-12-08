@@ -157,11 +157,6 @@ public class Board extends JPanel {
             return false;
         }
 
-        if (insufficientMaterial(true) && insufficientMaterial(false)) {
-            //game over due to insufficient materials
-            return false;
-        }
-
         return true;
     }
 
@@ -189,9 +184,9 @@ public class Board extends JPanel {
 
     public void addPieces(boolean isWhite){
         int row = isWhite ? 7 : 0;
-        //pieceList.add(new Rook(this, 0, row, isWhite));
-        //pieceList.add(new Knight(this, 1, row, isWhite));
-        //pieceList.add(new Bishop(this, 2, row, isWhite));
+        pieceList.add(new Rook(this, 0, row, isWhite));
+        pieceList.add(new Knight(this, 1, row, isWhite));
+        pieceList.add(new Bishop(this, 2, row, isWhite));
 
         pieceList.add(new Queen(this, 3, row, isWhite));
         pieceList.add(new King(this, 4, row, isWhite));
@@ -202,7 +197,7 @@ public class Board extends JPanel {
 
         for (int c = 0; c < 8; c++){
             row = isWhite ? 6 : 1;
-            //pieceList.add(new Pawn(this, c, row, isWhite));
+            pieceList.add(new Pawn(this, c, row, isWhite));
         }
 
     }
@@ -212,9 +207,13 @@ public class Board extends JPanel {
         if (checkScanner.isGameOver(king)) {
             if (checkScanner.isKingChecked((new Move(this, king, king.col, king.row)))) { //game over
                 System.out.println(isWhiteToMove ? "Black Wins!" : "White Wins!");
-            } else {    //stale-mate
+            }  else {    //stale-mate
                 System.out.println("Stale Mate!");
             }
+        } else if (insufficientMaterial(true) && insufficientMaterial(false)) {
+            //game over due to insufficient materials
+            System.out.println("Insufficient Materials! (Draw)");
+            isGameOver = true;
         }
     }
 
