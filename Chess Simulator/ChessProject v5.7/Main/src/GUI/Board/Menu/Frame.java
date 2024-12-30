@@ -373,27 +373,8 @@ public class Frame extends JFrame {
             this.variant = "standard";
             this.mode = "offline";
             this.startingColor = "white";
-            this.chessClock = new ChessClock(whiteTime, blackTime, whiteLabel, blackLabel);
 
-
-
-            this.layeredPane.remove(this.panel);
-            this.layeredPane.remove(this.createNewGame);
-            this.layeredPane.add(engine.board);
-            // 680x680 boyularinda bir board.
-            // 1920 - 680 = 1240/2=620 1020 - 680 = 340 / 2 = 170
-            engine.board.setBounds(620, 170, 680, 680);
-
-            this.layeredPane.add(whiteLabel);
-            this.layeredPane.add(blackLabel);
-
-            this.chessClock.setTimers();
-            engine.getClocks(this.chessClock);
-
-            this.layeredPane.revalidate();
-            this.layeredPane.repaint();
-            this.revalidate();
-            this.repaint();
+            setGame(whiteTime, blackTime, timeIncrement, variant, mode, startingColor);
         });
         panel.add(standartSelect1);
 
@@ -407,47 +388,7 @@ public class Frame extends JFrame {
             this.mode = "offline";
             this.startingColor = "white";
 
-            this.chessClock = new ChessClock(whiteTime, blackTime, whiteLabel, blackLabel);
-
-
-
-            this.layeredPane.remove(this.panel);
-            this.layeredPane.remove(this.createNewGame);
-            this.layeredPane.add(engine.board);
-            // 680x680 boyularinda bir board.
-            // 1920 - 680 = 1240/2=620 1020 - 680 = 340 / 2 = 170
-            engine.board.setBounds(620, 170, 680, 680);
-
-            this.layeredPane.add(whiteLabel);
-            this.layeredPane.add(blackLabel);
-
-            this.chessClock.setTimers();
-            engine.getClocks(this.chessClock);
-
-            this.layeredPane.revalidate();
-            this.layeredPane.repaint();
-            this.revalidate();
-            this.repaint();
-            /*layeredPane.remove(panel);
-            layeredPane.remove(createNewGame);
-            layeredPane.add(engine.board);
-            // 680x680 boyularinda bir board.
-            // 1920 - 680 = 1240/2=620 1020 - 680 = 340 / 2 = 170
-            engine.board.setBounds(620, 170, 680, 680);
-
-            layeredPane.add(whiteLabel);
-            layeredPane.add(blackLabel);
-
-            chessClock.setTimers();
-            engine.getClocks(chessClock);
-
-            layeredPane.revalidate();
-            layeredPane.repaint();
-            revalidate();
-            repaint();
-
-             */
-
+            setGame(whiteTime, blackTime, timeIncrement, variant, mode, startingColor);
         });
         panel.add(standartSelect2);
 
@@ -461,29 +402,7 @@ public class Frame extends JFrame {
             this.mode = "offline";
             this.startingColor = "white";
 
-            this.chessClock = new ChessClock(whiteTime, blackTime, whiteLabel, blackLabel);
-
-
-
-            this.layeredPane.remove(this.panel);
-            this.layeredPane.remove(this.createNewGame);
-            this.layeredPane.add(engine.board);
-            // 680x680 boyularinda bir board.
-            // 1920 - 680 = 1240/2=620 1020 - 680 = 340 / 2 = 170
-            engine.board.setBounds(620, 170, 680, 680);
-
-            this.layeredPane.add(whiteLabel);
-            this.layeredPane.add(blackLabel);
-
-            this.chessClock.setTimers();
-            engine.getClocks(this.chessClock);
-
-            this.layeredPane.revalidate();
-            this.layeredPane.repaint();
-            this.revalidate();
-            this.repaint();
-
-
+            setGame(whiteTime, blackTime, timeIncrement, variant, mode, startingColor);
         });
         panel.add(standartSelect3);
 
@@ -497,28 +416,7 @@ public class Frame extends JFrame {
             this.mode = "offline";
             this.startingColor = "white";
 
-            this.chessClock = new ChessClock(whiteTime, blackTime, whiteLabel, blackLabel);
-
-
-
-            this.layeredPane.remove(this.panel);
-            this.layeredPane.remove(this.createNewGame);
-            this.layeredPane.add(engine.board);
-            // 680x680 boyularinda bir board.
-            // 1920 - 680 = 1240/2=620 1020 - 680 = 340 / 2 = 170
-            engine.board.setBounds(620, 170, 680, 680);
-
-            this.layeredPane.add(whiteLabel);
-            this.layeredPane.add(blackLabel);
-
-            this.chessClock.setTimers();
-            engine.getClocks(this.chessClock);
-
-            this.layeredPane.revalidate();
-            this.layeredPane.repaint();
-            this.revalidate();
-            this.repaint();
-
+            setGame(whiteTime, blackTime, timeIncrement, variant, mode, startingColor);
         });
         panel.add(mergeChessSelect1);
 
@@ -532,29 +430,7 @@ public class Frame extends JFrame {
             this.mode = "offline";
             this.startingColor = "white";
 
-            this.chessClock = new ChessClock(whiteTime, blackTime, whiteLabel, blackLabel);
-
-
-
-            this.layeredPane.remove(this.panel);
-            this.layeredPane.remove(this.createNewGame);
-            this.layeredPane.add(engine.board);
-            // 680x680 boyularinda bir board.
-            // 1920 - 680 = 1240/2=620 1020 - 680 = 340 / 2 = 170
-            engine.board.setBounds(620, 170, 680, 680);
-
-            this.layeredPane.add(whiteLabel);
-            this.layeredPane.add(blackLabel);
-
-            this.chessClock.setTimers();
-            engine.getClocks(this.chessClock);
-
-            this.layeredPane.revalidate();
-            this.layeredPane.repaint();
-            this.revalidate();
-            this.repaint();
-
-
+            setGame(whiteTime, blackTime, timeIncrement, variant, mode, startingColor);
         });
         panel.add(mergeChessSelect2);
 
@@ -568,29 +444,7 @@ public class Frame extends JFrame {
             this.mode = "offline";
             this.startingColor = "white";
 
-            this.chessClock = new ChessClock(whiteTime, blackTime, whiteLabel, blackLabel);
-
-
-
-            this.layeredPane.remove(this.panel);
-            this.layeredPane.remove(this.createNewGame);
-            this.layeredPane.add(engine.board);
-            // 680x680 boyularinda bir board.
-            // 1920 - 680 = 1240/2=620 1020 - 680 = 340 / 2 = 170
-            engine.board.setBounds(620, 170, 680, 680);
-
-            this.layeredPane.add(whiteLabel);
-            this.layeredPane.add(blackLabel);
-
-            this.chessClock.setTimers();
-            engine.getClocks(this.chessClock);
-
-            this.layeredPane.revalidate();
-            this.layeredPane.repaint();
-            this.revalidate();
-            this.repaint();
-
-
+            setGame(whiteTime, blackTime, timeIncrement, variant, mode, startingColor);
         });
         panel.add(mergeChessSelect3);
 
@@ -605,29 +459,7 @@ public class Frame extends JFrame {
             this.mode = "offline";
             this.startingColor = "white";
 
-            this.chessClock = new ChessClock(whiteTime, blackTime, whiteLabel, blackLabel);
-
-
-
-            this.layeredPane.remove(this.panel);
-            this.layeredPane.remove(this.createNewGame);
-            this.layeredPane.add(engine.board);
-            // 680x680 boyularinda bir board.
-            // 1920 - 680 = 1240/2=620 1020 - 680 = 340 / 2 = 170
-            engine.board.setBounds(620, 170, 680, 680);
-
-            this.layeredPane.add(whiteLabel);
-            this.layeredPane.add(blackLabel);
-
-            this.chessClock.setTimers();
-            engine.getClocks(this.chessClock);
-
-            this.layeredPane.revalidate();
-            this.layeredPane.repaint();
-            this.revalidate();
-            this.repaint();
-
-
+            setGame(whiteTime, blackTime, timeIncrement, variant, mode, startingColor);
         });
         panel.add(threeChecksSelect1);
 
@@ -641,29 +473,7 @@ public class Frame extends JFrame {
             this.mode = "offline";
             this.startingColor = "white";
 
-            this.chessClock = new ChessClock(whiteTime, blackTime, whiteLabel, blackLabel);
-
-
-
-            this.layeredPane.remove(this.panel);
-            this.layeredPane.remove(this.createNewGame);
-            this.layeredPane.add(engine.board);
-            // 680x680 boyularinda bir board.
-            // 1920 - 680 = 1240/2=620 1020 - 680 = 340 / 2 = 170
-            engine.board.setBounds(620, 170, 680, 680);
-
-            this.layeredPane.add(whiteLabel);
-            this.layeredPane.add(blackLabel);
-
-            this.chessClock.setTimers();
-            engine.getClocks(this.chessClock);
-
-            this.layeredPane.revalidate();
-            this.layeredPane.repaint();
-            this.revalidate();
-            this.repaint();
-
-
+            setGame(whiteTime, blackTime, timeIncrement, variant, mode, startingColor);
         });
         panel.add(threeChecksSelect2);
 
@@ -677,28 +487,7 @@ public class Frame extends JFrame {
             this.mode = "offline";
             this.startingColor = "white";
 
-            this.chessClock = new ChessClock(whiteTime, blackTime, whiteLabel, blackLabel);
-
-
-
-            this.layeredPane.remove(this.panel);
-            this.layeredPane.remove(this.createNewGame);
-            this.layeredPane.add(engine.board);
-            // 680x680 boyularinda bir board.
-            // 1920 - 680 = 1240/2=620 1020 - 680 = 340 / 2 = 170
-            engine.board.setBounds(620, 170, 680, 680);
-
-            this.layeredPane.add(whiteLabel);
-            this.layeredPane.add(blackLabel);
-
-            this.chessClock.setTimers();
-            engine.getClocks(this.chessClock);
-
-            this.layeredPane.revalidate();
-            this.layeredPane.repaint();
-            this.revalidate();
-            this.repaint();
-
+            setGame(whiteTime, blackTime, timeIncrement, variant, mode, startingColor);
         });
         panel.add(threeChecksSelect3);
 
@@ -747,16 +536,23 @@ public class Frame extends JFrame {
         setMinimumSize(new Dimension(1000, 1000));
         setVisible(true);
     }
-}
-            /*layeredPane.remove(panel);
-            ChessClock chessClock = new ChessClock(whiteTime,blackTime, whiteLabel,blackLabel);
-            layeredPane.add(engine.board);
-            engine.board.setBounds(620, 170, 680, 680);
-            layeredPane.add(whiteLabel);
-            layeredPane.add(blackLabel);
-            this.layeredPane.revalidate();
-            this.layeredPane.repaint();
-            this.revalidate();
-            this.repaint();
 
-             */
+    private void setGame(int whiteTime, int blackTime, int timeIncrement, String variant, String mode, String startingColor) {
+        this.chessClock = new ChessClock(whiteTime, blackTime, whiteLabel, blackLabel);
+        this.layeredPane.remove(this.panel);
+        this.layeredPane.remove(this.createNewGame);
+        this.layeredPane.add(engine.board);
+        engine.board.setBounds(620, 170, 680, 680);
+
+        this.layeredPane.add(whiteLabel);
+        this.layeredPane.add(blackLabel);
+
+        this.chessClock.setTimers();
+        engine.getClocks(this.chessClock);
+
+        this.layeredPane.revalidate();
+        this.layeredPane.repaint();
+        this.revalidate();
+        this.repaint();
+    }
+}
