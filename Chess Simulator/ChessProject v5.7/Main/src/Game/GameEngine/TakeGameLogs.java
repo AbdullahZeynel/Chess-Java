@@ -7,6 +7,11 @@ import java.io.IOException;
 
 public class TakeGameLogs {
 
+    // This class will be used to take the local time when the game has starded and it will
+    // Log the FEN moves that happened during the game.
+    // Construct a new Interface that has an option "Analyze a Game"
+    // Then read the time and the FEN inputs from the file so you can construct a story of the game.
+    // If the user choses he can analyze the game with stockfish from the software.
 
     public static void takeLogs (String FEN, String date){
         try{
@@ -21,6 +26,7 @@ public class TakeGameLogs {
                 fw.append(FEN);
                 fw.close();
             }
+            // Common expection handeling.
         }catch (FileNotFoundException e1){
             System.out.println("File could not be opened.");
         }catch (IOException e2){
