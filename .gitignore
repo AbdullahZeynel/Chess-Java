@@ -1,0 +1,30 @@
+# ─── IDE & Editor ────────────────────────────────────
+.idea/
+*.iml
+*.eml
+*.userlibraries
+.classpath
+.project
+.settings/
+*.swp
+*.swo
+*~
+.vscode/
+
+# ─── Build Artifacts ─────────────────────────────────
+build/
+out/
+bin/
+target/
+*.class
+
+# ─── NetBeans ────────────────────────────────────────
+netBeans/
+nbproject/
+
+# ─── Runtime Generated ───────────────────────────────
+GameLogs.txt
+
+# ─── OS Files ────────────────────────────────────────
+.DS_Store
+Thumbs.db
