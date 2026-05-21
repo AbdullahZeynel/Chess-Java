@@ -25,6 +25,9 @@ nbproject/
 # ─── Runtime Generated ───────────────────────────────
 GameLogs.txt
 
+# ─── Development Plans ────────────────────────────────
+plan_and_development/
+
 # ─── OS Files ────────────────────────────────────────
 .DS_Store
 Thumbs.db

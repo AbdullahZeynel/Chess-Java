@@ -23,7 +23,7 @@ public class TakeGameLogs {
             }
 
             if (gameLogs.exists()){
-                fw.append(FEN);
+                fw.append(FEN + "\n");
                 fw.close();
             }
         }catch (FileNotFoundException e1){

@@ -228,7 +228,7 @@ public class Frame extends JFrame {
         });
 
         // Setting the Frame options.
-        setTitle("Gazi Chess - Chess Simulator");
+        setTitle("Gazi Chess Engine");
         setMinimumSize(new Dimension(1000, 750));
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(1280, 800);
@@ -381,14 +381,13 @@ public class Frame extends JFrame {
     private void setGame(int whiteTime, int blackTime, int timeIncrement, String variant, String mode, String startingColor) {
 
         // Initializing the chess clock
-        // This will edit the whiteLabel and blackLabel to our likings.
         this.chessClock = new ChessClock(whiteTime, blackTime, whiteLabel, blackLabel);
 
-        // Removing the contents of the layered pane. So only the board Jlabel object will be on the frame.
+        // Removing the contents of the layered pane
         this.layeredPane.remove(this.panel);
         this.layeredPane.remove(this.createNewGame);
 
-        // adding the board
+        // Adding the board
         this.layeredPane.add(engine.board);
 
         // Setting the board bounds - centered
@@ -397,24 +396,48 @@ public class Frame extends JFrame {
         int by = (getHeight() - boardSize) / 2 - 20;
         engine.board.setBounds(bx, by, boardSize, boardSize);
 
-        // Adding the chessClock labels to the screen.
+        // Adding the chessClock labels
         this.layeredPane.add(whiteLabel);
         this.layeredPane.add(blackLabel);
 
         // Position clock labels beside board
-        whiteLabel.setBounds(bx + boardSize + 30, by + boardSize - 100, 200, 70);
-        blackLabel.setBounds(bx + boardSize + 30, by + 30, 200, 70);
+        whiteLabel.setBounds(bx + boardSize + 30, by + boardSize - 100, 200, 90);
+        blackLabel.setBounds(bx + boardSize + 30, by + 10, 200, 90);
 
-        // safety switch. stopping all the timers.
+        // ─── Back to Menu button ─────────────────────────
+        JButton backButton = createPrimaryButton("\u2190 Menu");
+        backButton.setBounds(bx + boardSize + 30, by + boardSize / 2 - 25, 160, 45);
+        backButton.addActionListener(e -> {
+            // Return to main menu
+            layeredPane.removeAll();
+            layeredPane.add(panel, JLayeredPane.DEFAULT_LAYER);
+            setTitle("Gazi Chess Engine");
+            chessClock.setTimers();
+            // Reset engine for new game
+            engine = new ChessEngine();
+            createNewGame = new CreateNewGame(this, engine);
+            layeredPane.setSize(getContentPane().getSize());
+            panel.setSize(getContentPane().getSize());
+            layeredPane.revalidate();
+            layeredPane.repaint();
+        });
+        this.layeredPane.add(backButton);
+
+        // Stop timers before starting fresh
         this.chessClock.setTimers();
 
-        // Giving the engine this clock object so it could do its job.
+        // Pass time increment and clock to the engine
+        engine.setTimeIncrement(timeIncrement);
         engine.getClocks(this.chessClock);
+
+        // Update window title with game info
+        String timeLabel = (whiteTime / 60) + "+" + timeIncrement;
+        setTitle("Gazi Chess \u2014 " + timeLabel + " " + variant);
 
         // Set dark background for board area
         getContentPane().setBackground(Variables.frameBackGroundColor);
 
-        // revalidating and repainting.
+        // Revalidate and repaint
         this.layeredPane.revalidate();
         this.layeredPane.repaint();
         this.revalidate();

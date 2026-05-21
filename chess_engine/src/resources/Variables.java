@@ -8,14 +8,12 @@ public class Variables {
     public static String defaultStartingFenString = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";   //Default starting position
     public static String piecesFilePath = null; // resolved at runtime
 
-    /// Resolve the pieces.png path relative to the source directory
+    /// Resolve the pieces.png path relative to the working directory
     static {
-        // Try multiple possible locations
         String[] possiblePaths = {
-            "Main/src/resources/pieces.png",
-            "Chess Simulator/ChessProject v5.7/Main/src/resources/pieces.png",
-            "src/resources/pieces.png",
-            "resources/pieces.png"
+            "resources/pieces.png",
+            "chess_engine/src/resources/pieces.png",
+            "src/resources/pieces.png"
         };
 
         for (String path : possiblePaths) {
@@ -26,7 +24,7 @@ public class Variables {
             }
         }
 
-        // If none found, try to locate via classpath
+        // Try classpath as fallback
         if (piecesFilePath == null) {
             java.net.URL url = Variables.class.getClassLoader().getResource("resources/pieces.png");
             if (url != null && url.getProtocol().equals("file")) {
@@ -36,7 +34,7 @@ public class Variables {
 
         // Final fallback
         if (piecesFilePath == null) {
-            piecesFilePath = "Main/src/resources/pieces.png";
+            piecesFilePath = "resources/pieces.png";
         }
     }
 

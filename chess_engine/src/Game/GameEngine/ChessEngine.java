@@ -41,12 +41,14 @@ public class ChessEngine {
     public String gameMode                        = "Standard";
 
     protected boolean isWhiteToMove                 = true;       /// Game turn flag
-    protected boolean isGameOver                    = false;      /// Game over flag
+    public boolean isGameOver                      = false;      /// Game over flag
+    public String gameOverMessage                   = null;       /// Stores the result message for UI display
 
     public int enPassantTile                      = -1;         /// The ordered number of the en passant tile for the current position
 
     protected int halfMoveCounter                   = 0;
     protected int fullMoveCounter                   = 0;
+    protected int timeIncrement                     = 0;          /// Seconds added after each move
 
 
 
@@ -179,6 +181,10 @@ public class ChessEngine {
     /// Handles piece movement, captures, and delegates to special move handlers
     /// for pawns (en passant, double push, promotion) and kings (castling).
     protected void makeMove(Move move){
+        /// Check time before making the move
+        checkTimeOver();
+        if (isGameOver) return;
+
         String FENString = FEN.createFEN(this);
         System.out.println(FENString);
 
@@ -187,8 +193,11 @@ public class ChessEngine {
 
         if(isFirstGameMove)
             this.timers.startWhiteTimer();
-        else
+        else {
+            /// Apply time increment to the player who just moved, then switch
+            this.timers.addIncrement(isWhiteToMove, timeIncrement);
             this.timers.switchTimer();
+        }
 
         isFirstGameMove = false;
 
@@ -294,16 +303,9 @@ public class ChessEngine {
     /// Validates whether a move is legal.
     /// Checks: game over, turn order, team conflict, piece movement rules,
     /// path collision, and king safety (no moving into check).
+    /// Note: Timer checks are done in makeMove(), NOT here — this method is called
+    /// thousands of times during game-over scanning and must be fast.
     public boolean isValidMove(Move move){
-        if(isTimeOver(true)){
-            System.out.println("White wins! Black loses on time.");
-            isGameOver = true;
-        }
-        if(isTimeOver(false)){
-            System.out.println("Black wins! White loses on time.");
-            isGameOver = true;
-        }
-
         /// Check whether the game is over
         if(isGameOver)
             return false;
@@ -508,19 +510,50 @@ public class ChessEngine {
 
     /// Evaluates the current game state after each move:
     /// checkmate, stalemate, or draw by insufficient material.
+    /// Sets isGameOver and gameOverMessage for UI display.
     protected void updateGameState() {
         Piece king = findKing(isWhiteToMove);
         if (checkScanner.isGameOver(king)) {
             if (checkScanner.isKingChecked((new Move(this, king, king.col, king.row)))) {
-                System.out.println(isWhiteToMove ? "Black Wins!" : "White Wins!");
+                gameOverMessage = isWhiteToMove ? "Black Wins!" : "White Wins!";
+                System.out.println(gameOverMessage);
             }  else {
-                System.out.println("Stalemate!");
+                gameOverMessage = "Stalemate!";
+                System.out.println(gameOverMessage);
             }
-        } else if (insufficientMaterial(true) && insufficientMaterial(false)) {
-            System.out.println("Insufficient Material! (Draw)");
             isGameOver = true;
+            if (timers != null) timers.setTimers();
+            board.repaint();
+        } else if (insufficientMaterial(true) && insufficientMaterial(false)) {
+            gameOverMessage = "Insufficient Material!";
+            System.out.println(gameOverMessage);
+            isGameOver = true;
+            if (timers != null) timers.setTimers();
+            board.repaint();
         }
+    }
 
+    /// Checks if either player's time has expired — called once per actual move
+    protected void checkTimeOver() {
+        if (timers == null) return;
+        if (timers.isWhiteTimeOver()) {
+            gameOverMessage = "Black Wins on Time!";
+            System.out.println(gameOverMessage);
+            isGameOver = true;
+            timers.setTimers();
+            board.repaint();
+        } else if (timers.isBlackTimeOver()) {
+            gameOverMessage = "White Wins on Time!";
+            System.out.println(gameOverMessage);
+            isGameOver = true;
+            timers.setTimers();
+            board.repaint();
+        }
+    }
+
+    /// Sets the time increment value (seconds added after each move)
+    public void setTimeIncrement(int increment) {
+        this.timeIncrement = increment;
     }
 
     /// Clears all highlighted tiles from the board

@@ -1,11 +1,23 @@
 package GUI.Board;
+
 import resources.Variables;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.geom.RoundRectangle2D;
 
+/**
+ * Premium chess clock with active/inactive styling, low-time warnings,
+ * and time increment support.
+ *
+ * Each clock is a custom-painted JLabel with:
+ * - Player name ("White" / "Black") with chess piece icon
+ * - Large monospaced time display
+ * - Active state: amber-highlighted border
+ * - Low-time state: pulsing red warning
+ */
 public class ChessClock {
     private Timer whiteTimer;
     private Timer blackTimer;
@@ -14,130 +26,170 @@ public class ChessClock {
     private JLabel whiteLabel;
     private JLabel blackLabel;
 
+    private boolean whiteActive = false;
+    private boolean blackActive = false;
+
     public ChessClock(int whiteTimeInSeconds, int blackTimeInSeconds, JLabel whiteLabel, JLabel blackLabel) {
-        
-        // Initializing the required fields.
-        this.whiteTime = whiteTimeInSeconds;
-        this.blackTime = blackTimeInSeconds;
+        this.whiteTime  = whiteTimeInSeconds;
+        this.blackTime  = blackTimeInSeconds;
         this.whiteLabel = whiteLabel;
         this.blackLabel = blackLabel;
 
-        // Modern styled white timer label
-        styleClockLabel(this.whiteLabel, "White");
-        this.whiteLabel.setBounds(1310, 170, 200, 70);
+        // Style both clock panels
+        styleClockLabel(whiteLabel);
+        styleClockLabel(blackLabel);
 
-        // Modern styled black timer label
-        styleClockLabel(this.blackLabel, "Black");
-        this.blackLabel.setBounds(1310, 400, 200, 70);
-
-
-        // Initializing the white timer.
-        whiteTimer = new Timer(1000, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (whiteTime > 0) {
-                    whiteTime--;
-                    updateLabel(whiteLabel, whiteTime);
-                } else {
-                    whiteTimer.stop();
-                    // Handle timer expiration
-                }
+        // Initialize white timer
+        whiteTimer = new Timer(1000, e -> {
+            if (whiteTime > 0) {
+                whiteTime--;
+                updateLabel(whiteLabel, whiteTime, true, whiteActive);
+            } else {
+                whiteTimer.stop();
             }
         });
 
-        // Initializing  the black timer.
-        blackTimer = new Timer(1000, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (blackTime > 0) {
-                    blackTime--;
-                    updateLabel(blackLabel, blackTime);
-                } else {
-                    blackTimer.stop();
-                    // Handle timer expiration
-                }
+        // Initialize black timer
+        blackTimer = new Timer(1000, e -> {
+            if (blackTime > 0) {
+                blackTime--;
+                updateLabel(blackLabel, blackTime, false, blackActive);
+            } else {
+                blackTimer.stop();
             }
         });
 
-        // This code will make our labels that we input to our choice.
-        updateLabel(whiteLabel, whiteTime);
-        updateLabel(blackLabel, blackTime);
+        // Set initial display
+        updateLabel(whiteLabel, whiteTime, true, false);
+        updateLabel(blackLabel, blackTime, false, false);
     }
 
-    /// Apply modern dark styling to a clock label
-    private void styleClockLabel(JLabel label, String name) {
-        label.setOpaque(true);
+    /// Apply base styling — the actual painting is done via HTML content
+    private void styleClockLabel(JLabel label) {
+        label.setOpaque(false);
         label.setHorizontalAlignment(SwingConstants.CENTER);
-        label.setBackground(Variables.framePanelColor);
-        label.setForeground(Variables.frameTextColor);
-        label.setFont(new Font("Monospaced", Font.BOLD, 28));
-        label.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(Variables.frameBorderColor, 1),
-            BorderFactory.createEmptyBorder(5, 15, 5, 15)
-        ));
+        label.setVerticalAlignment(SwingConstants.CENTER);
+        label.setPreferredSize(new Dimension(200, 80));
     }
 
-    // update the label with the remaining time
-    private void updateLabel(JLabel label, int timeInSeconds) {
+    /// Update the label with rich HTML content showing player name + time
+    private void updateLabel(JLabel label, int timeInSeconds, boolean isWhite, boolean isActive) {
         int minutes = timeInSeconds / 60;
         int seconds = timeInSeconds % 60;
-        label.setText(String.format("%02d:%02d", minutes, seconds));
+        String timeStr = String.format("%02d:%02d", minutes, seconds);
 
-        // Flash red when time is low
-        if (timeInSeconds <= 30) {
-            label.setForeground(Variables.checkColor);
+        String icon       = isWhite ? "\u2654" : "\u265A";
+        String playerName = isWhite ? "White" : "Black";
+
+        // Color scheme based on state
+        String timeColor;
+        String bgColor;
+        String borderColor;
+        String nameColor = "#a09b91";
+
+        if (timeInSeconds <= 10) {
+            // Critical: red pulsing
+            timeColor   = "#ff3333";
+            bgColor     = "#3a1818";
+            borderColor = "#ff3333";
+        } else if (timeInSeconds <= 30) {
+            // Warning: orange
+            timeColor   = "#ff8844";
+            bgColor     = "#332211";
+            borderColor = "#ff8844";
+        } else if (isActive) {
+            // Active: amber highlight
+            timeColor   = "#ffffff";
+            bgColor     = "#3a3525";
+            borderColor = "#ffaa00";
         } else {
-            label.setForeground(Variables.frameTextColor);
+            // Inactive: dimmed
+            timeColor   = "#888880";
+            bgColor     = "#272522";
+            borderColor = "#413c34";
+        }
+
+        String html = String.format(
+            "<html><div style='" +
+                "background-color:%s;" +
+                "border:2px solid %s;" +
+                "border-radius:12px;" +
+                "padding:8px 16px;" +
+                "text-align:center;" +
+                "width:160px;" +
+                "'>" +
+                "<span style='color:%s;font-size:12px;'>%s %s</span><br/>" +
+                "<span style='color:%s;font-size:30px;font-family:monospace;font-weight:bold;'>%s</span>" +
+            "</div></html>",
+            bgColor, borderColor, nameColor, icon, playerName, timeColor, timeStr
+        );
+
+        label.setText(html);
+    }
+
+    /// Add time increment after a move
+    public void addIncrement(boolean isWhite, int incrementSeconds) {
+        if (incrementSeconds <= 0) return;
+        if (isWhite) {
+            whiteTime += incrementSeconds;
+            updateLabel(whiteLabel, whiteTime, true, whiteActive);
+        } else {
+            blackTime += incrementSeconds;
+            updateLabel(blackLabel, blackTime, false, blackActive);
         }
     }
 
-    // start the white timer
+    /// Start white's clock and stop black's
     public void startWhiteTimer() {
         blackTimer.stop();
+        blackActive = false;
+        whiteActive = true;
         whiteTimer.start();
+        updateLabel(whiteLabel, whiteTime, true, true);
+        updateLabel(blackLabel, blackTime, false, false);
     }
 
-    // start the black timer
+    /// Start black's clock and stop white's
     public void startBlackTimer() {
         whiteTimer.stop();
+        whiteActive = false;
+        blackActive = true;
         blackTimer.start();
+        updateLabel(whiteLabel, whiteTime, true, false);
+        updateLabel(blackLabel, blackTime, false, true);
     }
 
-    // This is the method used for switching the timer after every round.
-    public void switchTimer(){
-        if(whiteTimer.isRunning()){
+    /// Switch to the other player's clock
+    public void switchTimer() {
+        if (whiteTimer.isRunning()) {
             startBlackTimer();
-        } else if(blackTimer.isRunning()){
+        } else if (blackTimer.isRunning()) {
             startWhiteTimer();
         }
-
     }
 
-    // Stopping the timers
-    public void setTimers(){
+    /// Stop both timers
+    public void setTimers() {
         whiteTimer.stop();
         blackTimer.stop();
+        whiteActive = false;
+        blackActive = false;
     }
 
-    // Stopping the timers and resetting their values. Use THIS after a match ending.
+    /// Reset both timers to new values
     public void resetTimers(int whiteTimeInSeconds, int blackTimeInSeconds) {
-        whiteTimer.stop();
-        blackTimer.stop();
+        setTimers();
         this.whiteTime = whiteTimeInSeconds;
         this.blackTime = blackTimeInSeconds;
-        updateLabel(whiteLabel, whiteTime);
-        updateLabel(blackLabel, blackTime);
+        updateLabel(whiteLabel, whiteTime, true, false);
+        updateLabel(blackLabel, blackTime, false, false);
     }
 
-    //check if the white timer has expired
     public boolean isWhiteTimeOver() {
         return whiteTime <= 0;
     }
 
-    // check if the black timer has expired
     public boolean isBlackTimeOver() {
         return blackTime <= 0;
     }
-
-
 }

@@ -50,6 +50,7 @@ public class King extends Piece {
         if (pieceRow == row) {
             if (col == 6) {     /// King-side castle
                 Piece rook = engine.getPiece(7, row);
+                if (rook != null && rook.name.equals("Rook") && rook.isWhite == isWhite)
                     if (rook.isFirstMove == isFirstMove) {
                         return  engine.getPiece(5, row) == null &&
                                 engine.getPiece(6, row) == null &&

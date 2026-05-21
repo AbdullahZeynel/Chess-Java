@@ -103,6 +103,47 @@ public class Board extends JPanel {
         for (Arrow arrow : arrowList){
             arrow.drawArrow(g2d);
         }
+
+        /// Paint game-over overlay if the game has ended
+        if (engine.isGameOver && engine.gameOverMessage != null) {
+            paintGameOverOverlay(g2d);
+        }
+    }
+
+    /// Draws a semi-transparent overlay with the game result
+    private void paintGameOverOverlay(Graphics2D g2d) {
+        int boardWidth  = Variables.cols * Variables.tileSize;
+        int boardHeight = Variables.rows * Variables.tileSize;
+
+        // Semi-transparent dark overlay
+        g2d.setColor(new Color(0, 0, 0, 160));
+        g2d.fillRect(0, 0, boardWidth, boardHeight);
+
+        // Result card background
+        int cardW = 320;
+        int cardH = 100;
+        int cardX = (boardWidth - cardW) / 2;
+        int cardY = (boardHeight - cardH) / 2;
+
+        g2d.setColor(new Color(39, 37, 34, 240));
+        g2d.fillRoundRect(cardX, cardY, cardW, cardH, 20, 20);
+        g2d.setColor(Variables.frameAccentColor);
+        g2d.setStroke(new BasicStroke(2));
+        g2d.drawRoundRect(cardX, cardY, cardW, cardH, 20, 20);
+
+        // Result text
+        g2d.setFont(new Font("SansSerif", Font.BOLD, 28));
+        FontMetrics fm = g2d.getFontMetrics();
+        String msg = engine.gameOverMessage;
+        int textX = cardX + (cardW - fm.stringWidth(msg)) / 2;
+        int textY = cardY + (cardH + fm.getAscent() - fm.getDescent()) / 2 - 5;
+
+        // Text shadow
+        g2d.setColor(new Color(0, 0, 0, 120));
+        g2d.drawString(msg, textX + 1, textY + 1);
+        // Main text
+        g2d.setColor(Variables.frameAccentColor);
+        g2d.drawString(msg, textX, textY);
     }
 
     /// Paint coordinate labels on the board edges
