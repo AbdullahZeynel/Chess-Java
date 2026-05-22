@@ -287,8 +287,8 @@ public class FEN {
                         pieceList.add(new Queen(engine, col, row, isWhite));
                         break;
                     case 'k':
-                        if(engine.gameMode.equals("ThreeChecksKing"))
-                            pieceList.add(new King(engine, col, row, isWhite));
+                        if(engine instanceof ThreeChecksChess)
+                            pieceList.add(new ThreeChecksKing(engine, col, row, isWhite));
                         else
                             pieceList.add(new King(engine, col, row, isWhite));
                         break;

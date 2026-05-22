@@ -5,6 +5,7 @@ import GUI.Input;
 import GUI.Tile;
 import Game.GameEngine.ChessEngine;
 import Game.GameEngine.Move;
+
 import Game.Piece.King;
 import Game.Piece.Piece;
 import resources.Variables;
@@ -104,6 +105,7 @@ public class Board extends JPanel {
             arrow.drawArrow(g2d);
         }
 
+
         /// Paint game-over overlay if the game has ended
         if (engine.isGameOver && engine.gameOverMessage != null) {
             paintGameOverOverlay(g2d);
@@ -119,8 +121,11 @@ public class Board extends JPanel {
         g2d.setColor(new Color(0, 0, 0, 160));
         g2d.fillRect(0, 0, boardWidth, boardHeight);
 
-        // Result card background
-        int cardW = 320;
+        // Result card background — width adapts to message length
+        g2d.setFont(new Font("SansSerif", Font.BOLD, 28));
+        FontMetrics fm = g2d.getFontMetrics();
+        String msg = engine.gameOverMessage;
+        int cardW = Math.max(320, fm.stringWidth(msg) + 60);
         int cardH = 100;
         int cardX = (boardWidth - cardW) / 2;
         int cardY = (boardHeight - cardH) / 2;
@@ -131,10 +136,7 @@ public class Board extends JPanel {
         g2d.setStroke(new BasicStroke(2));
         g2d.drawRoundRect(cardX, cardY, cardW, cardH, 20, 20);
 
-        // Result text
-        g2d.setFont(new Font("SansSerif", Font.BOLD, 28));
-        FontMetrics fm = g2d.getFontMetrics();
-        String msg = engine.gameOverMessage;
+        // Result text (font & msg already set above for card sizing)
         int textX = cardX + (cardW - fm.stringWidth(msg)) / 2;
         int textY = cardY + (cardH + fm.getAscent() - fm.getDescent()) / 2 - 5;
 
@@ -174,6 +176,7 @@ public class Board extends JPanel {
         tileList = engine.invokeIfAllowed(this.getClass(),"tileList");
 
     }
+
 
     private void paintTile(Graphics2D g2d, int col, int row){
         boolean oddOrEven = ((col + row)%2 == 0);

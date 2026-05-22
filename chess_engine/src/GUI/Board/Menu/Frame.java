@@ -2,6 +2,7 @@ package GUI.Board.Menu;
 
 import GUI.Board.ChessClock;
 import Game.GameEngine.ChessEngine;
+import Game.GameEngine.ThreeChecksChess;
 import resources.Variables;
 
 import javax.swing.*;
@@ -380,6 +381,16 @@ public class Frame extends JFrame {
 
     private void setGame(int whiteTime, int blackTime, int timeIncrement, String variant, String mode, String startingColor) {
 
+        // ─── Variant-based engine creation ─────────────────────────
+        // Create the appropriate engine type based on the selected variant.
+        // Three Checks gets its own engine subclass with check counting.
+        if (variant.equals("threeChecks")) {
+            this.engine = new ThreeChecksChess();
+        } else {
+            this.engine = new ChessEngine();
+        }
+        this.createNewGame = new CreateNewGame(this, engine);
+
         // Initializing the chess clock
         this.chessClock = new ChessClock(whiteTime, blackTime, whiteLabel, blackLabel);
 
@@ -423,6 +434,21 @@ public class Frame extends JFrame {
         });
         this.layeredPane.add(backButton);
 
+        // ─── Three Checks indicator labels ─────────────────────────
+        if (engine instanceof ThreeChecksChess) {
+            ThreeChecksChess tcEngine = (ThreeChecksChess) engine;
+
+            JLabel whiteCheckInd = createCheckIndicatorLabel(tcEngine, true);
+            whiteCheckInd.setBounds(bx + boardSize + 30, by + boardSize - 10, 200, 30);
+            this.layeredPane.add(whiteCheckInd);
+            tcEngine.whiteCheckIndicator = whiteCheckInd;
+
+            JLabel blackCheckInd = createCheckIndicatorLabel(tcEngine, false);
+            blackCheckInd.setBounds(bx + boardSize + 30, by + 100, 200, 30);
+            this.layeredPane.add(blackCheckInd);
+            tcEngine.blackCheckIndicator = blackCheckInd;
+        }
+
         // Stop timers before starting fresh
         this.chessClock.setTimers();
 
@@ -442,5 +468,40 @@ public class Frame extends JFrame {
         this.layeredPane.repaint();
         this.revalidate();
         this.repaint();
+    }
+
+    /// Creates a custom-painted JLabel that displays check count dots for Three Checks variant.
+    /// The label reads the check count from the engine on every repaint.
+    private JLabel createCheckIndicatorLabel(ThreeChecksChess tcEngine, boolean isWhiteSide) {
+        return new JLabel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                int checks = isWhiteSide ? tcEngine.whiteChecksReceived : tcEngine.blackChecksReceived;
+                int dotR = 12;
+                int spacing = 22;
+                int startX = 0;
+                int y = (getHeight() - dotR) / 2;
+
+                Color filledColor  = new Color(220, 50, 50);
+                Color emptyColor   = new Color(70, 68, 64);
+                Color outlineColor = new Color(50, 48, 44);
+
+                for (int i = 0; i < 3; i++) {
+                    g2d.setColor(i < checks ? filledColor : emptyColor);
+                    g2d.fillOval(startX + i * spacing, y, dotR, dotR);
+                    g2d.setColor(outlineColor);
+                    g2d.drawOval(startX + i * spacing, y, dotR, dotR);
+                }
+
+                // "Checks" label
+                g2d.setColor(Variables.frameSubTextColor);
+                g2d.setFont(new Font("SansSerif", Font.PLAIN, 11));
+                g2d.drawString("Checks", startX + 3 * spacing + 5, y + dotR - 2);
+            }
+        };
     }
 }
