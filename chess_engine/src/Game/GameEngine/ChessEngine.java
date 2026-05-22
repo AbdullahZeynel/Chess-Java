@@ -514,6 +514,9 @@ public class ChessEngine {
     protected void updateGameState() {
         Piece king = findKing(isWhiteToMove);
         if (checkScanner.isGameOver(king)) {
+            String finalFEN = FEN.createFEN(this);
+            System.out.println(finalFEN);
+            TakeGameLogs.takeLogs(finalFEN, GetDateString.returnDateString());
             if (checkScanner.isKingChecked((new Move(this, king, king.col, king.row)))) {
                 gameOverMessage = isWhiteToMove ? "Black Wins!" : "White Wins!";
                 System.out.println(gameOverMessage);
