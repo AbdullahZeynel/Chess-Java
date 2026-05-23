@@ -6,7 +6,7 @@ import Game.GameEngine.Move;
 
 import resources.Variables;
 
-import java.awt.image.BufferedImage;
+
 
 /**
  * King piece — moves one square in any direction.
@@ -25,8 +25,7 @@ public class King extends Piece {
         this.name = "King";
         this.pieceChar = "K";
 
-        this.sprite = sheet.getSubimage(0 * sheetScale, (isWhite ? 0 : sheetScale), sheetScale, sheetScale)
-                           .getScaledInstance(Variables.tileSize, Variables.tileSize, BufferedImage.SCALE_SMOOTH);
+        this.sprite = getCachedSprite(0, isWhite);
     }
 
     @Override

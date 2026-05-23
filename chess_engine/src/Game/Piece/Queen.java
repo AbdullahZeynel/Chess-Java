@@ -3,7 +3,7 @@ package Game.Piece;
 import Game.GameEngine.ChessEngine;
 import resources.Variables;
 
-import java.awt.image.BufferedImage;
+
 
 /**
  * Queen piece — combines the movement of both Rook and Bishop.
@@ -22,8 +22,7 @@ public class Queen extends Piece implements movePieceCollision {
         this.name = "Queen";
         this.pieceChar = "Q";
 
-        this.sprite = sheet.getSubimage(1 * sheetScale, (isWhite ? 0 : sheetScale), sheetScale, sheetScale)
-                           .getScaledInstance(Variables.tileSize, Variables.tileSize, BufferedImage.SCALE_SMOOTH);
+        this.sprite = getCachedSprite(1, isWhite);
     }
 
     @Override

@@ -3,7 +3,7 @@ package Game.Piece;
 import Game.GameEngine.ChessEngine;
 import resources.Variables;
 
-import java.awt.image.BufferedImage;
+
 
 /**
  * Bishop piece — moves diagonally any number of squares.
@@ -24,9 +24,7 @@ public class Bishop extends Piece implements movePieceCollision {
         this.name = "Bishop";
         this.pieceChar = "B";
 
-        /// Sprite position: column 2 in the sheet, row based on color
-        this.sprite = sheet.getSubimage(2 * sheetScale, (isWhite ? 0 : sheetScale), sheetScale, sheetScale)
-                .getScaledInstance(Variables.tileSize, Variables.tileSize, BufferedImage.SCALE_SMOOTH);
+        this.sprite = getCachedSprite(2, isWhite);
     }
 
     @Override

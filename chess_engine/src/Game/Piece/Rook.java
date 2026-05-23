@@ -3,7 +3,7 @@ package Game.Piece;
 import Game.GameEngine.ChessEngine;
 import resources.Variables;
 
-import java.awt.image.BufferedImage;
+
 
 /**
  * Rook piece — moves horizontally or vertically any number of squares.
@@ -21,8 +21,7 @@ public class Rook extends Piece implements movePieceCollision {
         this.name = "Rook";
         this.pieceChar = "R";
 
-        this.sprite = sheet.getSubimage(4 * sheetScale, (isWhite ? 0 : sheetScale), sheetScale, sheetScale)
-                           .getScaledInstance(Variables.tileSize, Variables.tileSize, BufferedImage.SCALE_SMOOTH);
+        this.sprite = getCachedSprite(4, isWhite);
     }
 
     @Override

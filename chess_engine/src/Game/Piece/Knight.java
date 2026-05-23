@@ -3,7 +3,7 @@ package Game.Piece;
 import Game.GameEngine.ChessEngine;
 import resources.Variables;
 
-import java.awt.image.BufferedImage;
+
 
 /**
  * Knight piece — moves in an L-shape: 2 squares in one direction and 1 in the other.
@@ -21,8 +21,7 @@ public class Knight extends Piece {
         this.name = "Knight";
         this.pieceChar = "N";
 
-        this.sprite = sheet.getSubimage(3 * sheetScale, (isWhite ? 0 : sheetScale), sheetScale, sheetScale)
-                           .getScaledInstance(Variables.tileSize, Variables.tileSize, BufferedImage.SCALE_SMOOTH);
+        this.sprite = getCachedSprite(3, isWhite);
     }
 
     @Override

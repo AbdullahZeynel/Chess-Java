@@ -3,7 +3,7 @@ package Game.Piece;
 import Game.GameEngine.ChessEngine;
 import resources.Variables;
 
-import java.awt.image.BufferedImage;
+
 
 /**
  * Pawn piece — moves forward one square, optionally two on first move.
@@ -23,8 +23,7 @@ public class Pawn extends Piece {
         this.name    = "Pawn";
         this.pieceChar = "P";
 
-        this.sprite  = sheet.getSubimage(5 * sheetScale, (isWhite ? 0 : sheetScale), sheetScale, sheetScale)
-                .getScaledInstance(Variables.tileSize, Variables.tileSize, BufferedImage.SCALE_SMOOTH);
+        this.sprite  = getCachedSprite(5, isWhite);
 
         this.colorIndex = isWhite ? 1 : -1;
     }

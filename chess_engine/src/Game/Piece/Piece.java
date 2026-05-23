@@ -8,6 +8,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 
 /**
  * Abstract base class for all chess pieces.
@@ -16,6 +17,11 @@ import java.io.IOException;
  *
  * Each subclass must implement the PieceMoves interface to define
  * its specific movement rules.
+ *
+ * OPTIMIZATION: The sprite sheet is loaded ONCE (static), and all 12
+ * piece sprites (6 types × 2 colors) are pre-scaled and cached.
+ * This avoids repeated disk I/O and expensive SCALE_SMOOTH calls
+ * for every piece instance (~32 pieces per game).
  */
 public abstract class Piece implements PieceMoves {
 
@@ -32,18 +38,42 @@ public abstract class Piece implements PieceMoves {
 
     public boolean isFirstMove = true;  /// Tracks whether the piece has moved (for castling, pawn double push)
 
-    BufferedImage sheet;
+    /// ─── Static Sprite Cache ───────────────────────────────────────────
+    /// Loaded once, shared across all Piece instances.
+    /// Key format: "column_row" (e.g., "0_0" = white king, "5_1" = black pawn)
+    protected static BufferedImage sheet;
+    protected static int sheetScale;
+    private static final HashMap<String, Image> spriteCache = new HashMap<>();
 
-    {
-        try{
+    static {
+        try {
             sheet = ImageIO.read(new File(Variables.piecesFilePath));
+            sheetScale = sheet.getWidth() / 6;
+            preloadSprites();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    /// The sprite sheet has 6 columns (one per piece type)
-    protected int sheetScale = sheet.getWidth()/6;
+    /// Pre-scales all 12 piece sprites at startup (6 types × 2 colors).
+    /// Uses SCALE_SMOOTH once per sprite instead of once per piece instance.
+    private static void preloadSprites() {
+        for (int col = 0; col < 6; col++) {
+            for (int row = 0; row < 2; row++) {
+                String key = col + "_" + row;
+                Image scaled = sheet.getSubimage(col * sheetScale, row * sheetScale, sheetScale, sheetScale)
+                        .getScaledInstance(Variables.tileSize, Variables.tileSize, BufferedImage.SCALE_SMOOTH);
+                spriteCache.put(key, scaled);
+            }
+        }
+    }
+
+    /// Retrieves a pre-cached sprite by sheet position and color.
+    /// This replaces the per-piece getSubimage + getScaledInstance calls.
+    protected static Image getCachedSprite(int sheetCol, boolean isWhite) {
+        String key = sheetCol + "_" + (isWhite ? 0 : 1);
+        return spriteCache.get(key);
+    }
 
 
     public Piece(ChessEngine engine) {
