@@ -3,6 +3,8 @@ package GUI.Board.Menu;
 import GUI.Board.ChessClock;
 import Game.GameEngine.ChessEngine;
 import Game.GameEngine.ThreeChecksChess;
+import resources.GaziTheme;
+import resources.Theme;
 import resources.Variables;
 
 import javax.swing.*;
@@ -10,9 +12,12 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.RoundRectangle2D;
 
+/**
+ * Main application frame for Gazi Chess.
+ * Manages the menu screen, game board, and modal dialogs.
+ */
 public class Frame extends JFrame {
 
-    // Declaring the required fields.
     public JLayeredPane layeredPane = new JLayeredPane();
     public JPanel panel;
     public CreateNewGame createNewGame;
@@ -29,13 +34,20 @@ public class Frame extends JFrame {
     public String mode = "offline";
     public String startingColor = "white";
 
+    /// Tracks whether dark theme is active
+    private boolean isDarkTheme = true;
+
+    /// Persistent toolbar panel — always visible at top-left
+    private JPanel toolbarPanel;
+
+    /// Modal backdrop — used to block background clicks
+    private JPanel modalBackdrop;
+
     public Frame(ChessEngine engine) {
         this.engine = engine;
-
-        // Creating a pop up menu Label. It needs a Frame parameter so well give it this.
         createNewGame = new CreateNewGame(this, engine);
 
-        // The panel will be our background panel with custom painting
+        // ─── Background panel with custom painting ───────────
         panel = new JPanel(null) {
             @Override
             protected void paintComponent(Graphics g) {
@@ -44,191 +56,143 @@ public class Frame extends JFrame {
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
 
-                // Gradient background
                 GradientPaint gp = new GradientPaint(0, 0, Variables.frameBackGroundColor,
-                        getWidth(), getHeight(), new Color(35, 32, 28));
+                        getWidth(), getHeight(), Variables.frameGradientEndColor);
                 g2d.setPaint(gp);
                 g2d.fillRect(0, 0, getWidth(), getHeight());
 
-                // Draw title
-                g2d.setFont(new Font("Serif", Font.BOLD, 52));
-                String title = "\u265A  Gazi Chess";
+                // Title
+                g2d.setFont(new Font("SansSerif", Font.BOLD, 48));
+                String title = "Gazi Chess";
                 FontMetrics fm = g2d.getFontMetrics();
                 int titleX = (getWidth() - fm.stringWidth(title)) / 2;
-                int titleY = 100;
+                int titleY = 95;
 
-                // Title shadow
-                g2d.setColor(new Color(0, 0, 0, 100));
-                g2d.drawString(title, titleX + 2, titleY + 2);
-                // Title main
-                g2d.setColor(Variables.frameAccentColor);
+                g2d.setColor(new Color(0, 0, 0, 40));
+                g2d.drawString(title, titleX + 1, titleY + 1);
+                g2d.setColor(Variables.frameTextColor);
                 g2d.drawString(title, titleX, titleY);
 
                 // Subtitle
-                g2d.setFont(new Font("SansSerif", Font.PLAIN, 16));
+                g2d.setFont(new Font("SansSerif", Font.PLAIN, 15));
                 String subtitle = "Select a game mode to start playing";
                 fm = g2d.getFontMetrics();
                 g2d.setColor(Variables.frameSubTextColor);
-                g2d.drawString(subtitle, (getWidth() - fm.stringWidth(subtitle)) / 2, 135);
+                g2d.drawString(subtitle, (getWidth() - fm.stringWidth(subtitle)) / 2, 125);
 
-                // Draw category cards
-                drawCategoryCard(g2d, "Standard Chess", "\u265E", getCategoryX(getWidth(), 0), 165, getCategoryWidth(getWidth()));
-                drawCategoryCard(g2d, "Merge Chess", "\u265D", getCategoryX(getWidth(), 1), 165, getCategoryWidth(getWidth()));
-                drawCategoryCard(g2d, "Three Checks", "\u265A", getCategoryX(getWidth(), 2), 165, getCategoryWidth(getWidth()));
+                // Category cards
+                drawCategoryCard(g2d, "Standard Chess", getCategoryX(getWidth(), 0), 155, getCategoryWidth(getWidth()));
+                drawCategoryCard(g2d, "Three Checks", getCategoryX(getWidth(), 1), 155, getCategoryWidth(getWidth()));
             }
 
             private int getCategoryWidth(int totalWidth) {
-                return Math.min(280, (totalWidth - 200) / 3);
+                return Math.min(320, (totalWidth - 160) / 2);
             }
 
             private int getCategoryX(int totalWidth, int index) {
                 int cardW = getCategoryWidth(totalWidth);
-                int totalCards = 3 * cardW + 2 * 30; // 30px gaps
+                int totalCards = 2 * cardW + 40;
                 int startX = (totalWidth - totalCards) / 2;
-                return startX + index * (cardW + 30);
+                return startX + index * (cardW + 40);
             }
 
-            private void drawCategoryCard(Graphics2D g2d, String title, String icon, int x, int y, int w) {
+            private void drawCategoryCard(Graphics2D g2d, String title, int x, int y, int w) {
                 int h = 320;
-                // Card background with rounded corners
                 g2d.setColor(Variables.framePanelColor);
-                g2d.fill(new RoundRectangle2D.Double(x, y, w, h, 20, 20));
-
-                // Card border
+                g2d.fill(new RoundRectangle2D.Double(x, y, w, h, 16, 16));
                 g2d.setColor(Variables.frameBorderColor);
                 g2d.setStroke(new BasicStroke(1));
-                g2d.draw(new RoundRectangle2D.Double(x, y, w, h, 20, 20));
+                g2d.draw(new RoundRectangle2D.Double(x, y, w, h, 16, 16));
 
-                // Icon
-                g2d.setFont(new Font("Serif", Font.PLAIN, 42));
+                g2d.setFont(new Font("SansSerif", Font.BOLD, 17));
                 FontMetrics fm = g2d.getFontMetrics();
-                g2d.setColor(Variables.frameAccentColor);
-                g2d.drawString(icon, x + (w - fm.stringWidth(icon)) / 2, y + 55);
-
-                // Card title
-                g2d.setFont(new Font("SansSerif", Font.BOLD, 16));
-                fm = g2d.getFontMetrics();
                 g2d.setColor(Variables.frameTextColor);
-                g2d.drawString(title, x + (w - fm.stringWidth(title)) / 2, y + 85);
+                g2d.drawString(title, x + (w - fm.stringWidth(title)) / 2, y + 40);
 
-                // Divider line
                 g2d.setColor(Variables.frameBorderColor);
-                g2d.drawLine(x + 20, y + 100, x + w - 20, y + 100);
+                g2d.drawLine(x + 20, y + 58, x + w - 20, y + 58);
             }
         };
         panel.setBounds(0, 0, 1920, 1080);
 
         // ─── Standard Chess Buttons ─────────────────────────
-        JButton standartSelect1 = createTimeButton("3+1", "Blitz");
-        standartSelect1.addActionListener(e -> {
-            this.whiteTime = 180; this.blackTime = 180; this.timeIncrement = 1;
-            this.variant = "standard"; this.mode = "offline"; this.startingColor = "white";
-            setGame(whiteTime, blackTime, timeIncrement, variant, mode, startingColor);
-        });
+        JButton stdBtn1 = createTimeButton("3+1", "Blitz");
+        stdBtn1.addActionListener(e -> startQuickGame(180, 1, "standard"));
 
-        JButton standartSelect2 = createTimeButton("5+1", "Rapid");
-        standartSelect2.addActionListener(e -> {
-            this.whiteTime = 300; this.blackTime = 300; this.timeIncrement = 1;
-            this.variant = "standard"; this.mode = "offline"; this.startingColor = "white";
-            setGame(whiteTime, blackTime, timeIncrement, variant, mode, startingColor);
-        });
+        JButton stdBtn2 = createTimeButton("5+1", "Rapid");
+        stdBtn2.addActionListener(e -> startQuickGame(300, 1, "standard"));
 
-        JButton standartSelect3 = createTimeButton("15+3", "Classical");
-        standartSelect3.addActionListener(e -> {
-            this.whiteTime = 900; this.blackTime = 900; this.timeIncrement = 3;
-            this.variant = "standard"; this.mode = "offline"; this.startingColor = "white";
-            setGame(whiteTime, blackTime, timeIncrement, variant, mode, startingColor);
-        });
-
-        // ─── Merge Chess Buttons ─────────────────────────
-        JButton mergeChessSelect1 = createTimeButton("3+1", "Blitz");
-        mergeChessSelect1.addActionListener(e -> {
-            this.whiteTime = 180; this.blackTime = 180; this.timeIncrement = 1;
-            this.variant = "merge"; this.mode = "offline"; this.startingColor = "white";
-            setGame(whiteTime, blackTime, timeIncrement, variant, mode, startingColor);
-        });
-
-        JButton mergeChessSelect2 = createTimeButton("5+1", "Rapid");
-        mergeChessSelect2.addActionListener(e -> {
-            this.whiteTime = 300; this.blackTime = 300; this.timeIncrement = 1;
-            this.variant = "merge"; this.mode = "offline"; this.startingColor = "white";
-            setGame(whiteTime, blackTime, timeIncrement, variant, mode, startingColor);
-        });
-
-        JButton mergeChessSelect3 = createTimeButton("15+3", "Classical");
-        mergeChessSelect3.addActionListener(e -> {
-            this.whiteTime = 900; this.blackTime = 900; this.timeIncrement = 3;
-            this.variant = "merge"; this.mode = "offline"; this.startingColor = "white";
-            setGame(whiteTime, blackTime, timeIncrement, variant, mode, startingColor);
-        });
+        JButton stdBtn3 = createTimeButton("15+3", "Classical");
+        stdBtn3.addActionListener(e -> startQuickGame(900, 3, "standard"));
 
         // ─── Three Checks Buttons ─────────────────────────
-        JButton threeChecksSelect1 = createTimeButton("3+1", "Blitz");
-        threeChecksSelect1.addActionListener(e -> {
-            this.whiteTime = 180; this.blackTime = 180; this.timeIncrement = 1;
-            this.variant = "threeChecks"; this.mode = "offline"; this.startingColor = "white";
-            setGame(whiteTime, blackTime, timeIncrement, variant, mode, startingColor);
-        });
+        JButton tcBtn1 = createTimeButton("3+1", "Blitz");
+        tcBtn1.addActionListener(e -> startQuickGame(180, 1, "threeChecks"));
 
-        JButton threeChecksSelect2 = createTimeButton("5+1", "Rapid");
-        threeChecksSelect2.addActionListener(e -> {
-            this.whiteTime = 300; this.blackTime = 300; this.timeIncrement = 1;
-            this.variant = "threeChecks"; this.mode = "offline"; this.startingColor = "white";
-            setGame(whiteTime, blackTime, timeIncrement, variant, mode, startingColor);
-        });
+        JButton tcBtn2 = createTimeButton("5+1", "Rapid");
+        tcBtn2.addActionListener(e -> startQuickGame(300, 1, "threeChecks"));
 
-        JButton threeChecksSelect3 = createTimeButton("15+3", "Classical");
-        threeChecksSelect3.addActionListener(e -> {
-            this.whiteTime = 900; this.blackTime = 900; this.timeIncrement = 3;
-            this.variant = "threeChecks"; this.mode = "offline"; this.startingColor = "white";
-            setGame(whiteTime, blackTime, timeIncrement, variant, mode, startingColor);
-        });
+        JButton tcBtn3 = createTimeButton("15+3", "Classical");
+        tcBtn3.addActionListener(e -> startQuickGame(900, 3, "threeChecks"));
 
-        // We'll use a ComponentListener to reposition buttons dynamically
+        // Reposition buttons dynamically
         panel.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
-                repositionButtons(panel, new JButton[]{standartSelect1, standartSelect2, standartSelect3},
-                        new JButton[]{mergeChessSelect1, mergeChessSelect2, mergeChessSelect3},
-                        new JButton[]{threeChecksSelect1, threeChecksSelect2, threeChecksSelect3});
+                repositionButtons(panel, new JButton[]{stdBtn1, stdBtn2, stdBtn3},
+                        new JButton[]{tcBtn1, tcBtn2, tcBtn3});
             }
         });
 
-        panel.add(standartSelect1);
-        panel.add(standartSelect2);
-        panel.add(standartSelect3);
-        panel.add(mergeChessSelect1);
-        panel.add(mergeChessSelect2);
-        panel.add(mergeChessSelect3);
-        panel.add(threeChecksSelect1);
-        panel.add(threeChecksSelect2);
-        panel.add(threeChecksSelect3);
+        panel.add(stdBtn1);
+        panel.add(stdBtn2);
+        panel.add(stdBtn3);
+        panel.add(tcBtn1);
+        panel.add(tcBtn2);
+        panel.add(tcBtn3);
+
+        // ─── Modal Backdrop (blocks background clicks) ───────────
+        modalBackdrop = new JPanel(null) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setColor(new Color(0, 0, 0, 100));
+                g2d.fillRect(0, 0, getWidth(), getHeight());
+            }
+        };
+        modalBackdrop.setOpaque(false);
+        modalBackdrop.addMouseListener(new MouseAdapter() {
+            @Override public void mouseClicked(MouseEvent e) { e.consume(); }
+            @Override public void mousePressed(MouseEvent e) { e.consume(); }
+            @Override public void mouseReleased(MouseEvent e) { e.consume(); }
+        });
 
         // ─── Create New Game Button ─────────────────────────
-        JButton button = createPrimaryButton("Create a New Game");
-        button.addActionListener(e -> {
-            if (e.getSource() == button) {
-                createNewGame.setBounds(
-                    (getWidth() - 900) / 2,
-                    (getHeight() - 700) / 2,
-                    900, 700
-                );
-                layeredPane.add(createNewGame, JLayeredPane.POPUP_LAYER);
-                layeredPane.revalidate();
-                layeredPane.repaint();
-                revalidate();
-                repaint();
-            }
-        });
-        panel.add(button);
+        JButton newGameButton = createPrimaryButton("Create a New Game");
+        newGameButton.addActionListener(e -> openNewGameModal());
+        panel.add(newGameButton);
 
-        createNewGame.exitButton.addActionListener(e -> {
-            layeredPane.remove(createNewGame);
-            layeredPane.revalidate();
-            layeredPane.repaint();
-        });
+        // Exit button closes the modal
+        createNewGame.exitButton.addActionListener(e -> closeNewGameModal());
 
-        // Setting the Frame options.
+        // ─── Persistent Toolbar (PALETTE_LAYER — always on top) ─────
+        toolbarPanel = new JPanel(null) {
+            @Override protected void paintComponent(Graphics g) { /* transparent */ }
+        };
+        toolbarPanel.setOpaque(false);
+        toolbarPanel.setBounds(15, 15, 100, 40);
+
+        JButton themeToggle = createSmallToolbarButton(true);
+        themeToggle.setBounds(0, 0, 40, 40);
+        toolbarPanel.add(themeToggle);
+
+        JButton langToggle = createSmallToolbarButton(false);
+        langToggle.setBounds(48, 0, 40, 40);
+        toolbarPanel.add(langToggle);
+
+        layeredPane.add(toolbarPanel, JLayeredPane.PALETTE_LAYER);
+
+        // Frame setup
         setTitle("Gazi Chess Engine");
         setMinimumSize(new Dimension(1000, 750));
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -236,11 +200,9 @@ public class Frame extends JFrame {
         setLocationRelativeTo(null);
         getContentPane().setBackground(Variables.frameBackGroundColor);
 
-        // Adding the panel to the default layer.
         layeredPane.add(panel, JLayeredPane.DEFAULT_LAYER);
         add(layeredPane);
 
-        // Make layeredPane fill frame
         addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
@@ -252,7 +214,6 @@ public class Frame extends JFrame {
 
         setVisible(true);
 
-        // Trigger initial layout
         SwingUtilities.invokeLater(() -> {
             layeredPane.setSize(getContentPane().getSize());
             panel.setSize(getContentPane().getSize());
@@ -260,35 +221,148 @@ public class Frame extends JFrame {
         });
     }
 
-    private void repositionButtons(JPanel panel, JButton[] std, JButton[] merge, JButton[] threeC) {
+    // ════════════════════════════════════════════════════════════
+    // ─── Public API for modal management ───────────────────────
+    // ════════════════════════════════════════════════════════════
+
+    /// Opens the "Create New Game" modal dialog with backdrop
+    private void openNewGameModal() {
+        modalBackdrop.setBounds(0, 0, getWidth(), getHeight());
+        layeredPane.add(modalBackdrop, JLayeredPane.MODAL_LAYER);
+
+        createNewGame.setBounds(
+            (getWidth() - 880) / 2,
+            (getHeight() - 480) / 2,
+            880, 480
+        );
+        layeredPane.add(createNewGame, JLayeredPane.POPUP_LAYER);
+        layeredPane.revalidate();
+        layeredPane.repaint();
+    }
+
+    /// Closes the "Create New Game" modal and removes the backdrop
+    public void closeNewGameModal() {
+        layeredPane.remove(createNewGame);
+        layeredPane.remove(modalBackdrop);
+        layeredPane.revalidate();
+        layeredPane.repaint();
+    }
+
+    /// Quick game start from the time-control buttons
+    private void startQuickGame(int timeSecs, int increment, String variant) {
+        setGame(timeSecs, timeSecs, increment, variant, "offline", "white");
+    }
+
+    /// Called by CreateNewGame to start a game from the modal
+    public void startGameFromModal(int whiteTime, int blackTime, int increment, String variant, String mode, String color) {
+        setGame(whiteTime, blackTime, increment, variant, mode, color);
+    }
+
+    // ════════════════════════════════════════════════════════════
+    // ─── Private helpers ───────────────────────────────────────
+    // ════════════════════════════════════════════════════════════
+
+    /// Repositions time-control buttons inside the 2 category cards
+    private void repositionButtons(JPanel panel, JButton[] std, JButton[] threeC) {
         int w = panel.getWidth();
-        int cardW = Math.min(280, (w - 200) / 3);
-        int totalCards = 3 * cardW + 2 * 30;
+        int cardW = Math.min(320, (w - 160) / 2);
+        int totalCards = 2 * cardW + 40;
         int startX = (w - totalCards) / 2;
 
         int btnW = cardW - 40;
-        int btnH = 50;
-        int btnY0 = 285; // starting y for first button inside card
-        int gap = 60;
+        int btnH = 48;
+        int btnY0 = 230;
+        int gap = 58;
 
-        for (int cat = 0; cat < 3; cat++) {
-            int cx = startX + cat * (cardW + 30) + 20;
-            JButton[] btns = cat == 0 ? std : (cat == 1 ? merge : threeC);
+        for (int cat = 0; cat < 2; cat++) {
+            int cx = startX + cat * (cardW + 40) + 20;
+            JButton[] btns = cat == 0 ? std : threeC;
             for (int i = 0; i < 3; i++) {
                 btns[i].setBounds(cx, btnY0 + i * gap, btnW, btnH);
             }
         }
 
-        // Create New Game button
-        Component[] comps = panel.getComponents();
-        for (Component c : comps) {
-            if (c instanceof JButton) {
-                JButton b = (JButton) c;
-                if ("Create a New Game".equals(b.getText())) {
-                    int bw = 320;
-                    int bh = 55;
-                    b.setBounds((w - bw) / 2, 530, bw, bh);
+        // Reposition "Create a New Game" button
+        for (Component c : panel.getComponents()) {
+            if (c instanceof JButton && "Create a New Game".equals(((JButton) c).getText())) {
+                c.setBounds((w - 300) / 2, 520, 300, 50);
+            }
+        }
+    }
+
+    /// Creates a small toolbar button (theme toggle or language toggle)
+    private JButton createSmallToolbarButton(boolean isThemeButton) {
+        JButton btn = new JButton() {
+            boolean hovered = false;
+
+            {
+                addMouseListener(new MouseAdapter() {
+                    @Override public void mouseEntered(MouseEvent e) { hovered = true; repaint(); }
+                    @Override public void mouseExited(MouseEvent e) { hovered = false; repaint(); }
+                });
+            }
+
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                Color bg = hovered ? Variables.buttonSecondaryHoverColor : Variables.buttonSecondaryColor;
+                g2d.setColor(bg);
+                g2d.fill(new RoundRectangle2D.Double(0, 0, getWidth() - 1, getHeight() - 1, 10, 10));
+
+                if (hovered) {
+                    g2d.setColor(Variables.frameBorderColor);
+                    g2d.setStroke(new BasicStroke(1));
+                    g2d.draw(new RoundRectangle2D.Double(0, 0, getWidth() - 1, getHeight() - 1, 10, 10));
                 }
+
+                String label = isThemeButton ? (isDarkTheme ? "\u2600" : "\u263E") : "TR";
+
+                g2d.setFont(new Font("SansSerif", Font.BOLD, isThemeButton ? 18 : 13));
+                FontMetrics fm = g2d.getFontMetrics();
+                g2d.setColor(hovered ? Variables.frameAccentColor : Variables.frameSubTextColor);
+                g2d.drawString(label, (getWidth() - fm.stringWidth(label)) / 2,
+                        (getHeight() + fm.getAscent() - fm.getDescent()) / 2);
+            }
+        };
+        btn.setContentAreaFilled(false);
+        btn.setBorderPainted(false);
+        btn.setFocusPainted(false);
+        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        if (isThemeButton) {
+            btn.setToolTipText("Toggle Light/Dark Theme");
+            btn.addActionListener(e -> toggleTheme());
+        } else {
+            btn.setToolTipText("Toggle Language (TR/EN)");
+            // TODO: Language toggle — planned for v6.2.6
+        }
+
+        return btn;
+    }
+
+    /// Toggle between dark and light theme
+    private void toggleTheme() {
+        isDarkTheme = !isDarkTheme;
+        Theme.setTheme(isDarkTheme ? GaziTheme.DARK : GaziTheme.LIGHT);
+        getContentPane().setBackground(Variables.frameBackGroundColor);
+
+        // Refresh chess clock if in-game
+        if (chessClock != null) {
+            chessClock.refreshDisplay();
+        }
+
+        repaintAllComponents(layeredPane);
+        repaint();
+    }
+
+    /// Recursively repaint all components
+    private void repaintAllComponents(Container container) {
+        for (Component c : container.getComponents()) {
+            c.repaint();
+            if (c instanceof Container) {
+                repaintAllComponents((Container) c);
             }
         }
     }
@@ -300,10 +374,8 @@ public class Frame extends JFrame {
 
             {
                 addMouseListener(new MouseAdapter() {
-                    @Override
-                    public void mouseEntered(MouseEvent e) { hovered = true; repaint(); }
-                    @Override
-                    public void mouseExited(MouseEvent e) { hovered = false; repaint(); }
+                    @Override public void mouseEntered(MouseEvent e) { hovered = true; repaint(); }
+                    @Override public void mouseExited(MouseEvent e) { hovered = false; repaint(); }
                 });
             }
 
@@ -314,25 +386,23 @@ public class Frame extends JFrame {
 
                 Color bg = hovered ? Variables.buttonSecondaryHoverColor : Variables.buttonSecondaryColor;
                 g2d.setColor(bg);
-                g2d.fill(new RoundRectangle2D.Double(0, 0, getWidth() - 1, getHeight() - 1, 12, 12));
+                g2d.fill(new RoundRectangle2D.Double(0, 0, getWidth() - 1, getHeight() - 1, 10, 10));
 
                 if (hovered) {
                     g2d.setColor(Variables.frameAccentColor);
                     g2d.setStroke(new BasicStroke(1.5f));
-                    g2d.draw(new RoundRectangle2D.Double(0, 0, getWidth() - 1, getHeight() - 1, 12, 12));
+                    g2d.draw(new RoundRectangle2D.Double(0, 0, getWidth() - 1, getHeight() - 1, 10, 10));
                 }
 
-                // Time text
-                g2d.setFont(new Font("SansSerif", Font.BOLD, 18));
+                g2d.setFont(new Font("SansSerif", Font.BOLD, 17));
                 FontMetrics fm = g2d.getFontMetrics();
-                g2d.setColor(hovered ? Variables.buttonAccentTextColor : Variables.buttonTextColor);
-                g2d.drawString(time, (getWidth() - fm.stringWidth(time)) / 2, getHeight() / 2 - 2);
+                g2d.setColor(hovered ? Variables.buttonAccentTextColor : Variables.buttonSecondaryTextColor);
+                g2d.drawString(time, (getWidth() - fm.stringWidth(time)) / 2, getHeight() / 2 - 1);
 
-                // Label text
                 g2d.setFont(new Font("SansSerif", Font.PLAIN, 11));
                 fm = g2d.getFontMetrics();
                 g2d.setColor(Variables.frameSubTextColor);
-                g2d.drawString(label, (getWidth() - fm.stringWidth(label)) / 2, getHeight() / 2 + 15);
+                g2d.drawString(label, (getWidth() - fm.stringWidth(label)) / 2, getHeight() / 2 + 14);
             }
         };
         btn.setContentAreaFilled(false);
@@ -343,16 +413,14 @@ public class Frame extends JFrame {
     }
 
     /// Creates a styled primary action button
-    private JButton createPrimaryButton(String text) {
+    JButton createPrimaryButton(String text) {
         JButton btn = new JButton(text) {
             boolean hovered = false;
 
             {
                 addMouseListener(new MouseAdapter() {
-                    @Override
-                    public void mouseEntered(MouseEvent e) { hovered = true; repaint(); }
-                    @Override
-                    public void mouseExited(MouseEvent e) { hovered = false; repaint(); }
+                    @Override public void mouseEntered(MouseEvent e) { hovered = true; repaint(); }
+                    @Override public void mouseExited(MouseEvent e) { hovered = false; repaint(); }
                 });
             }
 
@@ -362,14 +430,14 @@ public class Frame extends JFrame {
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
                 Color bg = hovered ? Variables.buttonPrimaryHoverColor : Variables.buttonPrimaryColor;
-                GradientPaint gp = new GradientPaint(0, 0, bg, 0, getHeight(), bg.darker());
-                g2d.setPaint(gp);
-                g2d.fill(new RoundRectangle2D.Double(0, 0, getWidth() - 1, getHeight() - 1, 16, 16));
+                g2d.setColor(bg);
+                g2d.fill(new RoundRectangle2D.Double(0, 0, getWidth() - 1, getHeight() - 1, 14, 14));
 
-                g2d.setFont(new Font("SansSerif", Font.BOLD, 18));
+                g2d.setFont(new Font("SansSerif", Font.BOLD, 16));
                 FontMetrics fm = g2d.getFontMetrics();
                 g2d.setColor(Variables.buttonTextColor);
-                g2d.drawString(getText(), (getWidth() - fm.stringWidth(getText())) / 2, (getHeight() + fm.getAscent() - fm.getDescent()) / 2);
+                g2d.drawString(getText(), (getWidth() - fm.stringWidth(getText())) / 2,
+                        (getHeight() + fm.getAscent() - fm.getDescent()) / 2);
             }
         };
         btn.setContentAreaFilled(false);
@@ -379,62 +447,43 @@ public class Frame extends JFrame {
         return btn;
     }
 
+    /// Core game setup — removes menu, adds board + clock + controls
     private void setGame(int whiteTime, int blackTime, int timeIncrement, String variant, String mode, String startingColor) {
-
-        // ─── Variant-based engine creation ─────────────────────────
-        // Create the appropriate engine type based on the selected variant.
-        // Three Checks gets its own engine subclass with check counting.
+        // Create engine based on variant
         if (variant.equals("threeChecks")) {
             this.engine = new ThreeChecksChess();
         } else {
             this.engine = new ChessEngine();
         }
         this.createNewGame = new CreateNewGame(this, engine);
+        this.createNewGame.exitButton.addActionListener(e -> closeNewGameModal());
 
-        // Initializing the chess clock
         this.chessClock = new ChessClock(whiteTime, blackTime, whiteLabel, blackLabel);
 
-        // Removing the contents of the layered pane
-        this.layeredPane.remove(this.panel);
-        this.layeredPane.remove(this.createNewGame);
+        // Clear everything except toolbar
+        this.layeredPane.removeAll();
+        this.layeredPane.add(toolbarPanel, JLayeredPane.PALETTE_LAYER);
 
-        // Adding the board
+        // Add board
         this.layeredPane.add(engine.board);
-
-        // Setting the board bounds - centered
         int boardSize = Variables.cols * Variables.tileSize;
         int bx = (getWidth() - boardSize) / 2 - 80;
         int by = (getHeight() - boardSize) / 2 - 20;
         engine.board.setBounds(bx, by, boardSize, boardSize);
 
-        // Adding the chessClock labels
+        // Add clock labels
         this.layeredPane.add(whiteLabel);
         this.layeredPane.add(blackLabel);
-
-        // Position clock labels beside board
         whiteLabel.setBounds(bx + boardSize + 30, by + boardSize - 100, 200, 90);
         blackLabel.setBounds(bx + boardSize + 30, by + 10, 200, 90);
 
-        // ─── Back to Menu button ─────────────────────────
+        // Back to Menu button
         JButton backButton = createPrimaryButton("\u2190 Menu");
         backButton.setBounds(bx + boardSize + 30, by + boardSize / 2 - 25, 160, 45);
-        backButton.addActionListener(e -> {
-            // Return to main menu
-            layeredPane.removeAll();
-            layeredPane.add(panel, JLayeredPane.DEFAULT_LAYER);
-            setTitle("Gazi Chess Engine");
-            chessClock.setTimers();
-            // Reset engine for new game
-            engine = new ChessEngine();
-            createNewGame = new CreateNewGame(this, engine);
-            layeredPane.setSize(getContentPane().getSize());
-            panel.setSize(getContentPane().getSize());
-            layeredPane.revalidate();
-            layeredPane.repaint();
-        });
+        backButton.addActionListener(e -> returnToMenu());
         this.layeredPane.add(backButton);
 
-        // ─── Three Checks indicator labels ─────────────────────────
+        // Three Checks indicators
         if (engine instanceof ThreeChecksChess) {
             ThreeChecksChess tcEngine = (ThreeChecksChess) engine;
 
@@ -449,29 +498,45 @@ public class Frame extends JFrame {
             tcEngine.blackCheckIndicator = blackCheckInd;
         }
 
-        // Stop timers before starting fresh
+        // Initialize clock
         this.chessClock.setTimers();
-
-        // Pass time increment and clock to the engine
         engine.setTimeIncrement(timeIncrement);
         engine.getClocks(this.chessClock);
 
-        // Update window title with game info
+        // Update title
         String timeLabel = (whiteTime / 60) + "+" + timeIncrement;
         setTitle("Gazi Chess \u2014 " + timeLabel + " " + variant);
 
-        // Set dark background for board area
         getContentPane().setBackground(Variables.frameBackGroundColor);
 
-        // Revalidate and repaint
         this.layeredPane.revalidate();
         this.layeredPane.repaint();
         this.revalidate();
         this.repaint();
     }
 
-    /// Creates a custom-painted JLabel that displays check count dots for Three Checks variant.
-    /// The label reads the check count from the engine on every repaint.
+    /// Return to the main menu from an active game
+    private void returnToMenu() {
+        layeredPane.removeAll();
+        layeredPane.add(toolbarPanel, JLayeredPane.PALETTE_LAYER);
+        layeredPane.add(panel, JLayeredPane.DEFAULT_LAYER);
+        setTitle("Gazi Chess Engine");
+
+        if (chessClock != null) {
+            chessClock.setTimers();
+        }
+
+        engine = new ChessEngine();
+        createNewGame = new CreateNewGame(this, engine);
+        createNewGame.exitButton.addActionListener(e -> closeNewGameModal());
+
+        layeredPane.setSize(getContentPane().getSize());
+        panel.setSize(getContentPane().getSize());
+        layeredPane.revalidate();
+        layeredPane.repaint();
+    }
+
+    /// Creates check count indicator dots for Three Checks variant
     private JLabel createCheckIndicatorLabel(ThreeChecksChess tcEngine, boolean isWhiteSide) {
         return new JLabel() {
             @Override
@@ -483,24 +548,18 @@ public class Frame extends JFrame {
                 int checks = isWhiteSide ? tcEngine.whiteChecksReceived : tcEngine.blackChecksReceived;
                 int dotR = 12;
                 int spacing = 22;
-                int startX = 0;
                 int y = (getHeight() - dotR) / 2;
 
-                Color filledColor  = new Color(220, 50, 50);
-                Color emptyColor   = new Color(70, 68, 64);
-                Color outlineColor = new Color(50, 48, 44);
-
                 for (int i = 0; i < 3; i++) {
-                    g2d.setColor(i < checks ? filledColor : emptyColor);
-                    g2d.fillOval(startX + i * spacing, y, dotR, dotR);
-                    g2d.setColor(outlineColor);
-                    g2d.drawOval(startX + i * spacing, y, dotR, dotR);
+                    g2d.setColor(i < checks ? new Color(220, 50, 50) : Variables.buttonSecondaryColor);
+                    g2d.fillOval(i * spacing, y, dotR, dotR);
+                    g2d.setColor(Variables.frameBorderColor);
+                    g2d.drawOval(i * spacing, y, dotR, dotR);
                 }
 
-                // "Checks" label
                 g2d.setColor(Variables.frameSubTextColor);
                 g2d.setFont(new Font("SansSerif", Font.PLAIN, 11));
-                g2d.drawString("Checks", startX + 3 * spacing + 5, y + dotR - 2);
+                g2d.drawString("Checks", 3 * spacing + 5, y + dotR - 2);
             }
         };
     }

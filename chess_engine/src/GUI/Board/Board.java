@@ -112,39 +112,38 @@ public class Board extends JPanel {
         }
     }
 
-    /// Draws a semi-transparent overlay with the game result
+    /// Draws a theme-aware overlay with the game result
     private void paintGameOverOverlay(Graphics2D g2d) {
         int boardWidth  = Variables.cols * Variables.tileSize;
         int boardHeight = Variables.rows * Variables.tileSize;
 
-        // Semi-transparent dark overlay
-        g2d.setColor(new Color(0, 0, 0, 160));
+        // Semi-transparent overlay — theme-aware
+        g2d.setColor(Variables.gameOverOverlayColor);
         g2d.fillRect(0, 0, boardWidth, boardHeight);
 
-        // Result card background — width adapts to message length
+        // Result card — adapts to theme
         g2d.setFont(new Font("SansSerif", Font.BOLD, 28));
         FontMetrics fm = g2d.getFontMetrics();
         String msg = engine.gameOverMessage;
-        int cardW = Math.max(320, fm.stringWidth(msg) + 60);
-        int cardH = 100;
+        int cardW = Math.max(320, fm.stringWidth(msg) + 80);
+        int cardH = 90;
         int cardX = (boardWidth - cardW) / 2;
         int cardY = (boardHeight - cardH) / 2;
 
-        g2d.setColor(new Color(39, 37, 34, 240));
+        // Card background
+        g2d.setColor(Variables.gameOverCardBgColor);
         g2d.fillRoundRect(cardX, cardY, cardW, cardH, 20, 20);
-        g2d.setColor(Variables.frameAccentColor);
+
+        // Card border
+        g2d.setColor(Variables.gameOverCardBorderColor);
         g2d.setStroke(new BasicStroke(2));
         g2d.drawRoundRect(cardX, cardY, cardW, cardH, 20, 20);
 
-        // Result text (font & msg already set above for card sizing)
+        // Result text
         int textX = cardX + (cardW - fm.stringWidth(msg)) / 2;
-        int textY = cardY + (cardH + fm.getAscent() - fm.getDescent()) / 2 - 5;
+        int textY = cardY + (cardH + fm.getAscent() - fm.getDescent()) / 2;
 
-        // Text shadow
-        g2d.setColor(new Color(0, 0, 0, 120));
-        g2d.drawString(msg, textX + 1, textY + 1);
-        // Main text
-        g2d.setColor(Variables.frameAccentColor);
+        g2d.setColor(Variables.gameOverTextColor);
         g2d.drawString(msg, textX, textY);
     }
 

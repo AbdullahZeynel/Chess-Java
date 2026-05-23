@@ -119,7 +119,6 @@ public class ThreeChecksChess extends ChessEngine {
                     }
                     if (whiteChecksReceived >= 3) {
                         gameOverMessage = "Black Wins by Three Checks!";
-                        System.out.println(gameOverMessage);
                         isGameOver = true;
                         if (timers != null) timers.setTimers();
                         board.repaint();
@@ -132,7 +131,6 @@ public class ThreeChecksChess extends ChessEngine {
                     }
                     if (blackChecksReceived >= 3) {
                         gameOverMessage = "White Wins by Three Checks!";
-                        System.out.println(gameOverMessage);
                         isGameOver = true;
                         if (timers != null) timers.setTimers();
                         board.repaint();

@@ -2,7 +2,15 @@ package resources;
 
 import java.awt.*;
 
-//"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+/**
+ * Global constants and theme-driven color palette.
+ *
+ * Colors are initialized from GaziTheme.DARK at startup and can be
+ * swapped at runtime via Theme.setTheme() → Variables.applyTheme().
+ *
+ * Non-color constants (dimensions, FEN strings, file paths) remain static.
+ */
+///"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 public class Variables {
     public static String fenString = null;        //Might change during the game.
     public static String defaultStartingFenString = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";   //Default starting position
@@ -36,6 +44,9 @@ public class Variables {
         if (piecesFilePath == null) {
             piecesFilePath = "resources/pieces.png";
         }
+
+        // Initialize default theme
+        Theme.setTheme(GaziTheme.DARK);
     }
 
     public static int tileSize = 85;
@@ -43,47 +54,108 @@ public class Variables {
     public static int rows = 8;
     public static int cols = 8;
 
-    /// ─── Premium Color Palette ──────────────────────────────────────────
+    // ─── Theme-Driven Colors ─────────────────────────────────────────
+    // These are updated by applyTheme() when the theme changes.
 
-    /// Board tile colors – warm wood inspired (lichess-like)
-    public static Color whiteTileColor            = new Color(240, 217, 181);   // warm cream
-    public static Color blackTileColor            = new Color(181, 136, 99);    // rich walnut
+    /// Board tile colors
+    public static Color whiteTileColor;
+    public static Color blackTileColor;
 
     /// Highlight & interaction colors
-    public static Color highlightedSquareColor    = new Color(255, 170, 0, 120);   // amber glow
-    public static Color arrowColor                = new Color(255, 170, 0, 180);   // golden arrow
+    public static Color highlightedSquareColor;
+    public static Color arrowColor;
 
-    public static Color checkColor                = new Color(235, 64, 52, 200);   // vivid red
-    public static Color validMoveColor            = new Color(20, 85, 30, 160);    // elegant green
-    public static Color captureMoveColor          = new Color(235, 64, 52, 140);   // capture red
+    public static Color checkColor;
+    public static Color validMoveColor;
+    public static Color captureMoveColor;
 
-    public static Color highlightedWhiteTileColor = new Color(247, 236, 118);      // bright yellow
-    public static Color highlightedBlackTileColor = new Color(218, 195, 71);       // dark yellow
+    public static Color highlightedWhiteTileColor;
+    public static Color highlightedBlackTileColor;
 
     /// Frame & panel colors
-    public static Color frameBackGroundColor      = new Color(22, 21, 18);         // near-black
-    public static Color framePanelColor           = new Color(39, 37, 34);         // dark surface
-    public static Color frameAccentColor          = new Color(255, 170, 0);        // amber accent
-    public static Color frameTextColor            = new Color(230, 225, 215);      // warm white
-    public static Color frameSubTextColor         = new Color(160, 155, 145);      // muted text
-    public static Color frameBorderColor          = new Color(65, 60, 52);         // subtle border
+    public static Color frameBackGroundColor;
+    public static Color frameGradientEndColor;
+    public static Color framePanelColor;
+    public static Color frameAccentColor;
+    public static Color frameTextColor;
+    public static Color frameSubTextColor;
+    public static Color frameBorderColor;
 
-    public static Color promotionPanelColor       = new Color(39, 37, 34, 230);
+    public static Color promotionPanelColor;
 
     /// Button colors
-    public static Color buttonPrimaryColor        = new Color(130, 105, 60);       // golden brown
-    public static Color buttonPrimaryHoverColor   = new Color(160, 130, 70);       // lighter gold
-    public static Color buttonSecondaryColor      = new Color(55, 52, 47);         // dark button
-    public static Color buttonSecondaryHoverColor = new Color(75, 70, 62);         // hover dark
-    public static Color buttonTextColor           = new Color(255, 255, 255);      // white text
-    public static Color buttonAccentTextColor     = new Color(255, 200, 87);       // gold text
+    public static Color buttonPrimaryColor;
+    public static Color buttonPrimaryHoverColor;
+    public static Color buttonSecondaryColor;
+    public static Color buttonSecondaryHoverColor;
+    public static Color buttonTextColor;
+    public static Color buttonSecondaryTextColor;
+    public static Color buttonAccentTextColor;
+
+    /// Coordinate label colors
+    public static Color coordLightColor;
+    public static Color coordDarkColor;
+
+    /// Game Over overlay
+    public static Color gameOverOverlayColor;
+    public static Color gameOverCardBgColor;
+    public static Color gameOverCardBorderColor;
+    public static Color gameOverTextColor;
 
     /// Dimensions
     public static Dimension defaultDimention      = new Dimension(1000, 1000);
     public static Dimension boardDimention        = new Dimension(cols * tileSize, rows * tileSize);
     public static Dimension promoPanelDimention   = new Dimension(tileSize, 4 * tileSize);
 
-    /// Coordinate label colors
-    public static Color coordLightColor           = new Color(181, 136, 99);       // on light tiles
-    public static Color coordDarkColor            = new Color(240, 217, 181);      // on dark tiles
+    /// Applies all colors from the given theme to the static fields.
+    /// Called by Theme.setTheme() whenever the active theme changes.
+    public static void applyTheme(Theme theme) {
+        // Board
+        whiteTileColor            = theme.lightTile;
+        blackTileColor            = theme.darkTile;
+
+        // Highlights
+        highlightedSquareColor    = theme.highlightedSquare;
+        arrowColor                = theme.arrowColor;
+
+        // Game state
+        checkColor                = theme.checkColor;
+        validMoveColor            = theme.validMoveColor;
+        captureMoveColor          = theme.captureMoveColor;
+
+        // Highlighted tiles
+        highlightedWhiteTileColor = theme.highlightedLightTile;
+        highlightedBlackTileColor = theme.highlightedDarkTile;
+
+        // Frame
+        frameBackGroundColor      = theme.bgPrimary;
+        frameGradientEndColor     = theme.bgGradientEnd;
+        framePanelColor           = theme.bgSurface;
+        frameAccentColor          = theme.accent;
+        frameTextColor            = theme.textPrimary;
+        frameSubTextColor         = theme.textMuted;
+        frameBorderColor          = theme.border;
+
+        // Promotion
+        promotionPanelColor       = theme.promoPanel;
+
+        // Buttons
+        buttonPrimaryColor        = theme.btnPrimary;
+        buttonPrimaryHoverColor   = theme.btnPrimaryHover;
+        buttonSecondaryColor      = theme.btnSecondary;
+        buttonSecondaryHoverColor = theme.btnSecondaryHover;
+        buttonTextColor           = theme.btnText;
+        buttonSecondaryTextColor  = theme.btnSecondaryText;
+        buttonAccentTextColor     = theme.btnAccentText;
+
+        // Coordinates
+        coordLightColor           = theme.coordOnLight;
+        coordDarkColor            = theme.coordOnDark;
+
+        // Game Over
+        gameOverOverlayColor      = theme.gameOverOverlay;
+        gameOverCardBgColor       = theme.gameOverCardBg;
+        gameOverCardBorderColor   = theme.gameOverCardBorder;
+        gameOverTextColor         = theme.gameOverText;
+    }
 }

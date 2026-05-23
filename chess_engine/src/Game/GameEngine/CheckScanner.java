@@ -249,7 +249,7 @@ public class CheckScanner {
         Piece savedSelection = engine.selectedPiece;
         for (Piece piece: pieceList)
             if(engine.sameTeam(piece, king)) {
-                engine.selectedPiece = (piece == king) ? king : null;
+                engine.selectedPiece = piece;
 
                 for(int row = 0; row < Variables.rows; row++)
                     for(int col = 0; col < Variables.cols; col++) {

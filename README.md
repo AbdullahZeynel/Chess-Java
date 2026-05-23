@@ -6,7 +6,6 @@ A Java-based chess engine built with Swing, featuring a modern GUI, multiple gam
 
 - **Standard Chess** — Full chess rules with castling, en passant, and pawn promotion
 - **Three Checks** — First to deliver three checks wins
-- **Merge Chess** — Experimental chess variant
 - **Chess Clock** — Configurable time controls (Blitz, Rapid, Classical)
 - **FEN Support** — Board positions stored and loaded via FEN notation
 - **Game Logging** — Automatic move history recording

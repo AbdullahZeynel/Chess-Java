@@ -1,223 +1,367 @@
 package GUI.Board.Menu;
 
-import GUI.Board.ChessClock;
 import Game.GameEngine.ChessEngine;
 import resources.Variables;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.RoundRectangle2D;
+import java.awt.image.BufferedImage;
+import java.io.File;
 
 public class CreateNewGame extends JLabel {
 
-    // Initializing the buttons.
     public JButton exitButton;
     public JButton createButton;
 
-    // Initializing the frame and required fields for the ChessClock.
     private Frame frame;
-    private ChessEngine engine;
-    JLabel whiteLabel = new JLabel();
-    JLabel blackLabel = new JLabel();
-
-    // These values are default. If user wont change any values, this would be the profile of the game.
-    public int whiteTime = 60;
-    public int blackTime = 60;
-    public int timeIncrement = 0;
-
     public String startingColor = "white";
-    public String variant = "standart";
-    public String mode = "offline";
+    private int selectedColorIndex = 0;
 
-    ChessClock chessClock;
+    private int selectedMinutes = 5;
+    private int selectedIncrement = 0;
+    private String selectedTimeLabel = "5+0";
+
+    private static Image whiteKingSprite;
+    private static Image blackKingSprite;
+
+    static {
+        try {
+            BufferedImage sheet = ImageIO.read(new File(Variables.piecesFilePath));
+            int scale = sheet.getWidth() / 6;
+            whiteKingSprite = sheet.getSubimage(0, 0, scale, scale)
+                    .getScaledInstance(50, 50, Image.SCALE_SMOOTH);
+            blackKingSprite = sheet.getSubimage(0, scale, scale, scale)
+                    .getScaledInstance(50, 50, Image.SCALE_SMOOTH);
+        } catch (Exception ignored) {}
+    }
+
+    /// All time presets: {label, minutes, increment, category}
+    private static final String[][] PRESETS = {
+        {"1+0","1","0"},  {"1+1","1","1"},  {"2+1","2","1"},
+        {"3+0","3","0"},  {"3+2","3","2"},  {"5+0","5","0"},
+        {"5+3","5","3"},  {"10+0","10","0"}, {"10+5","10","5"},
+        {"15+10","15","10"}, {"30+0","30","0"}, {"90+30","90","30"},
+    };
 
     public CreateNewGame(Frame frame, ChessEngine engine) {
         this.frame = frame;
-        this.engine = engine;
-
         setLayout(null);
         setOpaque(false);
 
-        // Override painting for rounded card with shadow
-        // We'll draw in paintComponent
+        // ─── Title ───────────────────────────
+        add(makeTitle());
 
-        // Declaring the text fields on the right of the combo boxes.
-        TextField modeField = new TextField("Mode", 50, 80, 150, 50);
-        modeField.setForeground(Variables.frameAccentColor);
-        modeField.setFont(new Font("SansSerif", Font.BOLD, 16));
+        // ─── Variant Selector ────────────────
+        add(createLabel("Variant", 50, 68));
+        String[] variants = {"Standard", "Three Checks"};
+        StyledDropdown variantSel = new StyledDropdown(variants);
+        variantSel.setBounds(150, 62, 200, 36);
+        add(variantSel);
 
-        TextField variantTextField = new TextField("Variant", 50, 190, 150, 50);
-        variantTextField.setForeground(Variables.frameAccentColor);
-        variantTextField.setFont(new Font("SansSerif", Font.BOLD, 16));
+        // ─── Time Control Grid ───────────────
+        add(createLabel("Time", 50, 115));
 
-        TextField timeTextField = new TextField("Time", 50, 300, 150, 50);
-        timeTextField.setForeground(Variables.frameAccentColor);
-        timeTextField.setFont(new Font("SansSerif", Font.BOLD, 16));
+        int gridX = 50, gridY = 145;
+        int chipW = 90, chipH = 38, gapX = 8, gapY = 8;
+        int cols = 4;
+        for (int i = 0; i < PRESETS.length; i++) {
+            JButton chip = createTimeChip(PRESETS[i]);
+            int col = i % cols, row = i / cols;
+            chip.setBounds(gridX + col * (chipW + gapX), gridY + row * (chipH + gapY), chipW, chipH);
+            add(chip);
+        }
 
-        TextField selectColorTextField = new TextField("Color", 500, 80, 150, 50);
-        selectColorTextField.setForeground(Variables.frameAccentColor);
-        selectColorTextField.setFont(new Font("SansSerif", Font.BOLD, 16));
+        // ─── Custom Input Row ────────────────
+        int customY = gridY + 3 * (chipH + gapY) + 10;
+        add(createLabel("Custom", 50, customY + 4));
 
-        // Setting the combo box for variant selection.
-        String[] variantText = {"Standart", "MergeChess", "ThreeChecks"};
-        JComboBox<String> variantC = createStyledComboBox(variantText);
-        variantC.setBounds(220, 190, 220, 50);
+        JTextField minF = styledField("5", 150, customY, 50, 32);
+        add(minF);
+        add(createSmallLabel("min", 205, customY + 8));
 
-        // Setting the combo box for time selection.
-        String[] timeText = {"1", "2", "3", "5", "10", "15", "30", "90"};
-        JComboBox<String> timeC = createStyledComboBox(timeText);
-        timeC.setBounds(220, 300, 220, 50);
+        add(createSmallLabel("+", 230, customY + 6));
 
-        // Setting the combo box for the playing mode selection.
-        String[] modeText = {"Online", "Offline", "vs. Stockfish"};
-        JComboBox<String> modeC = createStyledComboBox(modeText);
-        modeC.setBounds(220, 80, 220, 50);
+        JTextField incF = styledField("0", 245, customY, 45, 32);
+        add(incF);
+        add(createSmallLabel("sec", 295, customY + 8));
 
-        // Create Game button
-        createButton = createStyledButton("Create The Game", Variables.buttonPrimaryColor, Variables.buttonPrimaryHoverColor);
-        createButton.setBounds(50, 500, 600, 70);
-        createButton.addActionListener(e -> {
-
-            this.whiteTime = Integer.parseInt(timeC.getSelectedItem().toString()) * 60;
-            this.blackTime = Integer.parseInt(timeC.getSelectedItem().toString()) * 60;
-            this.timeIncrement = 1;
-            this.variant = variantC.getSelectedItem().toString();
-            this.mode = modeC.getSelectedItem().toString();
-            this.startingColor = startingColor;
-            this.chessClock = new ChessClock(whiteTime, blackTime, whiteLabel, blackLabel);
-
-            this.frame.layeredPane.remove(this.frame.panel);
-            this.frame.layeredPane.remove(this.frame.createNewGame);
-
-            this.frame.layeredPane.add(engine.board);
-            int boardSize = Variables.cols * Variables.tileSize;
-            int bx = (frame.getWidth() - boardSize) / 2 - 80;
-            int by = (frame.getHeight() - boardSize) / 2 - 20;
-            engine.board.setBounds(bx, by, boardSize, boardSize);
-
-            this.frame.layeredPane.add(whiteLabel);
-            this.frame.layeredPane.add(blackLabel);
-
-            whiteLabel.setBounds(bx + boardSize + 30, by + boardSize - 100, 200, 70);
-            blackLabel.setBounds(bx + boardSize + 30, by + 30, 200, 70);
-
-            chessClock.setTimers();
-            engine.getClocks(chessClock);
-
-            this.frame.layeredPane.revalidate();
-            this.frame.layeredPane.repaint();
-            this.frame.revalidate();
-            this.frame.repaint();
+        JButton applyBtn = makeSmallBtn("Set");
+        applyBtn.setBounds(330, customY, 55, 32);
+        applyBtn.addActionListener(e -> {
+            try {
+                int m = Math.max(1, Math.min(180, Integer.parseInt(minF.getText().trim())));
+                int inc = Math.max(0, Math.min(60, Integer.parseInt(incF.getText().trim())));
+                selectedMinutes = m; selectedIncrement = inc;
+                selectedTimeLabel = m + "+" + inc;
+                repaint();
+            } catch (NumberFormatException ignored) {}
         });
+        add(applyBtn);
 
-        // Exit button - styled as icon
-        exitButton = createStyledButton("\u2715", Variables.buttonSecondaryColor, new Color(200, 60, 60));
-        exitButton.setBounds(830, 15, 45, 45);
-        exitButton.setFont(new Font("SansSerif", Font.BOLD, 20));
+        // ─── Play As ─────────────────────────
+        add(createLabel("Play As", 500, 68));
+        int[] cX = {500, 578, 656};
+        for (int i = 0; i < 3; i++) {
+            JButton cb = createColorButton(i);
+            cb.setBounds(cX[i], 100, 70, 80);
+            add(cb);
+        }
 
-        // Color buttons
-        JButton whiteColorButton = createStyledButton("W", Variables.buttonSecondaryColor, Variables.buttonSecondaryHoverColor);
-        whiteColorButton.setBounds(510, 150, 55, 55);
-        whiteColorButton.addActionListener(e -> startingColor = "white");
-
-        JButton randomColorButton = createStyledButton("R", Variables.buttonSecondaryColor, Variables.buttonSecondaryHoverColor);
-        randomColorButton.setBounds(575, 145, 65, 65);
-        randomColorButton.addActionListener(e -> startingColor = Math.random() > 0.5 ? "white" : "black");
-
-        JButton blackColorButton = createStyledButton("B", Variables.buttonSecondaryColor, Variables.buttonSecondaryHoverColor);
-        blackColorButton.setBounds(650, 150, 55, 55);
-        blackColorButton.addActionListener(e -> startingColor = "black");
-
-        // Title for popup
-        JLabel titleLabel = new JLabel("New Game", SwingConstants.CENTER);
-        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 28));
-        titleLabel.setForeground(Variables.frameTextColor);
-        titleLabel.setBounds(0, 15, 830, 45);
-
-        // Adding components
-        add(titleLabel);
-        add(exitButton);
-        add(selectColorTextField);
-        add(whiteColorButton);
-        add(blackColorButton);
-        add(randomColorButton);
+        // ─── Create Game ─────────────────────
+        int btnY = customY + 55;
+        createButton = makeActionBtn("Create Game");
+        createButton.setBounds(50, btnY, 700, 50);
+        createButton.addActionListener(e -> {
+            String v = variantSel.getSelectedItem().equals("Three Checks") ? "threeChecks" : "standard";
+            int wt = selectedMinutes * 60;
+            frame.closeNewGameModal();
+            frame.startGameFromModal(wt, wt, selectedIncrement, v, "offline", startingColor);
+        });
         add(createButton);
-        add(variantTextField);
-        add(timeTextField);
-        add(modeField);
-        add(variantC);
-        add(modeC);
-        add(timeC);
-        setBounds(450, 100, 900, 700);
+
+        // ─── Exit ────────────────────────────
+        exitButton = makeExitBtn();
+        exitButton.setBounds(810, 15, 36, 36);
+        add(exitButton);
+
+        setBounds(0, 0, 880, btnY + 80);
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-        // Shadow
-        g2d.setColor(new Color(0, 0, 0, 80));
-        g2d.fill(new RoundRectangle2D.Double(6, 6, getWidth() - 6, getHeight() - 6, 24, 24));
-
-        // Background
+        g2d.setColor(new Color(0, 0, 0, 40));
+        g2d.fill(new RoundRectangle2D.Double(3, 3, getWidth() - 3, getHeight() - 3, 18, 18));
         g2d.setColor(Variables.framePanelColor);
-        g2d.fill(new RoundRectangle2D.Double(0, 0, getWidth() - 6, getHeight() - 6, 24, 24));
-
-        // Border
+        g2d.fill(new RoundRectangle2D.Double(0, 0, getWidth() - 3, getHeight() - 3, 18, 18));
         g2d.setColor(Variables.frameBorderColor);
-        g2d.setStroke(new BasicStroke(1.5f));
-        g2d.draw(new RoundRectangle2D.Double(0, 0, getWidth() - 6, getHeight() - 6, 24, 24));
-
+        g2d.setStroke(new BasicStroke(1));
+        g2d.draw(new RoundRectangle2D.Double(0, 0, getWidth() - 3, getHeight() - 3, 18, 18));
         super.paintComponent(g);
     }
 
-    private JButton createStyledButton(String text, Color normalColor, Color hoverColor) {
-        JButton btn = new JButton(text) {
-            boolean hovered = false;
+    // ── Factory Methods ──────────────────────────────────────
 
-            {
-                addMouseListener(new MouseAdapter() {
-                    @Override
-                    public void mouseEntered(MouseEvent e) { hovered = true; repaint(); }
-                    @Override
-                    public void mouseExited(MouseEvent e) { hovered = false; repaint(); }
-                });
-            }
-
-            @Override
-            protected void paintComponent(Graphics g) {
+    private JLabel makeTitle() {
+        JLabel l = new JLabel() {
+            @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2d = (Graphics2D) g;
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-                Color bg = hovered ? hoverColor : normalColor;
-                g2d.setColor(bg);
-                g2d.fill(new RoundRectangle2D.Double(0, 0, getWidth() - 1, getHeight() - 1, 14, 14));
-
-                g2d.setColor(Variables.buttonTextColor);
-                FontMetrics fm = g2d.getFontMetrics(getFont());
-                g2d.setFont(getFont());
-                g2d.drawString(getText(),
-                    (getWidth() - fm.stringWidth(getText())) / 2,
-                    (getHeight() + fm.getAscent() - fm.getDescent()) / 2);
+                g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+                g2d.setFont(new Font("SansSerif", Font.BOLD, 24));
+                g2d.setColor(Variables.frameTextColor);
+                g2d.drawString("New Game", 50, g2d.getFontMetrics().getAscent() + 2);
             }
         };
-        btn.setContentAreaFilled(false);
-        btn.setBorderPainted(false);
-        btn.setFocusPainted(false);
-        btn.setFont(new Font("SansSerif", Font.BOLD, 16));
-        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        return btn;
+        l.setBounds(0, 15, 400, 38);
+        return l;
     }
 
-    private JComboBox<String> createStyledComboBox(String[] items) {
-        JComboBox<String> combo = new JComboBox<>(items);
-        combo.setBackground(Variables.buttonSecondaryColor);
-        combo.setForeground(Variables.frameTextColor);
-        combo.setFont(new Font("SansSerif", Font.PLAIN, 15));
-        combo.setBorder(BorderFactory.createLineBorder(Variables.frameBorderColor));
-        combo.setFocusable(false);
-        return combo;
+    private JLabel createLabel(String t, int x, int y) {
+        JLabel l = new JLabel() {
+            @Override protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+                g2.setFont(new Font("SansSerif", Font.BOLD, 13));
+                g2.setColor(Variables.frameSubTextColor);
+                g2.drawString(t, 0, g2.getFontMetrics().getAscent());
+            }
+        };
+        l.setBounds(x, y, 120, 22);
+        return l;
+    }
+
+    private JLabel createSmallLabel(String t, int x, int y) {
+        JLabel l = new JLabel() {
+            @Override protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+                g2.setFont(new Font("SansSerif", Font.PLAIN, 11));
+                g2.setColor(Variables.frameSubTextColor);
+                g2.drawString(t, 0, g2.getFontMetrics().getAscent());
+            }
+        };
+        l.setBounds(x, y, 30, 18);
+        return l;
+    }
+
+    private JButton createTimeChip(String[] d) {
+        String label = d[0]; int mins = Integer.parseInt(d[1]); int inc = Integer.parseInt(d[2]);
+        JButton b = new JButton() {
+            boolean hover = false;
+            { addMouseListener(new MouseAdapter() {
+                @Override public void mouseEntered(MouseEvent e) { hover=true; repaint(); }
+                @Override public void mouseExited(MouseEvent e) { hover=false; repaint(); }
+            }); }
+            @Override protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                boolean sel = label.equals(selectedTimeLabel);
+                g2.setColor(sel ? Variables.buttonPrimaryColor : (hover ? Variables.buttonSecondaryHoverColor : Variables.buttonSecondaryColor));
+                g2.fill(new RoundRectangle2D.Double(0,0,getWidth()-1,getHeight()-1,10,10));
+                if (sel) { g2.setColor(Variables.frameAccentColor); g2.setStroke(new BasicStroke(1.5f)); g2.draw(new RoundRectangle2D.Double(0,0,getWidth()-1,getHeight()-1,10,10)); }
+                g2.setFont(new Font("SansSerif", Font.BOLD, 14));
+                FontMetrics fm = g2.getFontMetrics();
+                g2.setColor(sel ? Variables.buttonTextColor : (hover ? Variables.buttonAccentTextColor : Variables.buttonSecondaryTextColor));
+                g2.drawString(label,(getWidth()-fm.stringWidth(label))/2,(getHeight()+fm.getAscent()-fm.getDescent())/2);
+            }
+        };
+        b.setContentAreaFilled(false); b.setBorderPainted(false); b.setFocusPainted(false);
+        b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        b.addActionListener(e -> { selectedMinutes=mins; selectedIncrement=inc; selectedTimeLabel=label; getParent().repaint(); });
+        return b;
+    }
+
+    private JTextField styledField(String def, int x, int y, int w, int h) {
+        JTextField f = new JTextField(def);
+        f.setBounds(x,y,w,h);
+        f.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        f.setHorizontalAlignment(JTextField.CENTER);
+        f.setBackground(Variables.buttonSecondaryColor);
+        f.setForeground(Variables.buttonSecondaryTextColor);
+        f.setCaretColor(Variables.frameTextColor);
+        f.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Variables.frameBorderColor),
+                BorderFactory.createEmptyBorder(2,4,2,4)));
+        return f;
+    }
+
+    private JButton makeSmallBtn(String t) {
+        JButton b = new JButton() {
+            boolean h=false;
+            { addMouseListener(new MouseAdapter() {
+                @Override public void mouseEntered(MouseEvent e){h=true;repaint();}
+                @Override public void mouseExited(MouseEvent e){h=false;repaint();}
+            }); }
+            @Override protected void paintComponent(Graphics g) {
+                Graphics2D g2=(Graphics2D)g;
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(h?Variables.buttonPrimaryHoverColor:Variables.buttonPrimaryColor);
+                g2.fill(new RoundRectangle2D.Double(0,0,getWidth()-1,getHeight()-1,8,8));
+                g2.setFont(new Font("SansSerif",Font.BOLD,11)); FontMetrics fm=g2.getFontMetrics();
+                g2.setColor(Variables.buttonTextColor);
+                g2.drawString(t,(getWidth()-fm.stringWidth(t))/2,(getHeight()+fm.getAscent()-fm.getDescent())/2);
+            }
+        };
+        b.setContentAreaFilled(false);b.setBorderPainted(false);b.setFocusPainted(false);
+        b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        return b;
+    }
+
+    private JButton makeActionBtn(String t) {
+        JButton b = new JButton() {
+            boolean h=false;
+            { addMouseListener(new MouseAdapter() {
+                @Override public void mouseEntered(MouseEvent e){h=true;repaint();}
+                @Override public void mouseExited(MouseEvent e){h=false;repaint();}
+            }); }
+            @Override protected void paintComponent(Graphics g) {
+                Graphics2D g2=(Graphics2D)g;
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(h?Variables.buttonPrimaryHoverColor:Variables.buttonPrimaryColor);
+                g2.fill(new RoundRectangle2D.Double(0,0,getWidth()-1,getHeight()-1,14,14));
+                g2.setFont(new Font("SansSerif",Font.BOLD,17)); FontMetrics fm=g2.getFontMetrics();
+                g2.setColor(Variables.buttonTextColor);
+                g2.drawString(t,(getWidth()-fm.stringWidth(t))/2,(getHeight()+fm.getAscent()-fm.getDescent())/2);
+            }
+        };
+        b.setContentAreaFilled(false);b.setBorderPainted(false);b.setFocusPainted(false);
+        b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        return b;
+    }
+
+    private JButton makeExitBtn() {
+        JButton b = new JButton() {
+            boolean h=false;
+            { addMouseListener(new MouseAdapter() {
+                @Override public void mouseEntered(MouseEvent e){h=true;repaint();}
+                @Override public void mouseExited(MouseEvent e){h=false;repaint();}
+            }); }
+            @Override protected void paintComponent(Graphics g) {
+                Graphics2D g2=(Graphics2D)g;
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
+                if(h){g2.setColor(new Color(200,50,50));g2.fill(new RoundRectangle2D.Double(0,0,getWidth()-1,getHeight()-1,10,10));}
+                g2.setFont(new Font("SansSerif",Font.BOLD,16)); FontMetrics fm=g2.getFontMetrics();
+                g2.setColor(h?Color.WHITE:Variables.frameSubTextColor);
+                String x="\u2715";
+                g2.drawString(x,(getWidth()-fm.stringWidth(x))/2,(getHeight()+fm.getAscent()-fm.getDescent())/2);
+            }
+        };
+        b.setContentAreaFilled(false);b.setBorderPainted(false);b.setFocusPainted(false);
+        b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        return b;
+    }
+
+    private JButton createColorButton(int ci) {
+        JButton b = new JButton() {
+            boolean h=false;
+            { addMouseListener(new MouseAdapter() {
+                @Override public void mouseEntered(MouseEvent e){h=true;repaint();}
+                @Override public void mouseExited(MouseEvent e){h=false;repaint();}
+            }); }
+            @Override protected void paintComponent(Graphics g) {
+                Graphics2D g2=(Graphics2D)g;
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
+                boolean sel=(selectedColorIndex==ci);
+                g2.setColor(sel?Variables.buttonPrimaryColor:(h?Variables.buttonSecondaryHoverColor:Variables.buttonSecondaryColor));
+                g2.fill(new RoundRectangle2D.Double(0,0,getWidth()-1,getHeight()-1,12,12));
+                if(sel){g2.setColor(Variables.frameAccentColor);g2.setStroke(new BasicStroke(2));g2.draw(new RoundRectangle2D.Double(0,0,getWidth()-1,getHeight()-1,12,12));}
+                int ss=36;
+                if(ci==0&&whiteKingSprite!=null) g2.drawImage(whiteKingSprite,(getWidth()-ss)/2,6,ss,ss,null);
+                else if(ci==2&&blackKingSprite!=null) g2.drawImage(blackKingSprite,(getWidth()-ss)/2,6,ss,ss,null);
+                else if(ci==1&&whiteKingSprite!=null&&blackKingSprite!=null){int hs=28;g2.drawImage(whiteKingSprite,getWidth()/2-hs-2,8,hs,hs,null);g2.drawImage(blackKingSprite,getWidth()/2+2,8,hs,hs,null);}
+                String l=ci==0?"White":(ci==2?"Black":"Random");
+                g2.setFont(new Font("SansSerif",Font.PLAIN,10));FontMetrics fm=g2.getFontMetrics();
+                g2.setColor(sel?new Color(220,220,220):Variables.frameSubTextColor);
+                g2.drawString(l,(getWidth()-fm.stringWidth(l))/2,getHeight()-8);
+            }
+        };
+        b.setContentAreaFilled(false);b.setBorderPainted(false);b.setFocusPainted(false);
+        b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        b.addActionListener(e->{selectedColorIndex=ci;startingColor=ci==0?"white":(ci==2?"black":(Math.random()>0.5?"white":"black"));getParent().repaint();});
+        return b;
+    }
+
+    /// Dropdown with JPopupMenu
+    private class StyledDropdown extends JPanel {
+        private String[] opts; private int sel=0; private boolean h=false;
+        StyledDropdown(String[] o){opts=o;setOpaque(false);setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            addMouseListener(new MouseAdapter(){
+                @Override public void mouseEntered(MouseEvent e){h=true;repaint();}
+                @Override public void mouseExited(MouseEvent e){h=false;repaint();}
+                @Override public void mouseClicked(MouseEvent e){showP();}
+            });
+        }
+        String getSelectedItem(){return opts[sel];}
+        private void showP(){
+            JPopupMenu p=new JPopupMenu();p.setBackground(Variables.framePanelColor);
+            p.setBorder(BorderFactory.createLineBorder(Variables.frameBorderColor));
+            for(int i=0;i<opts.length;i++){final int idx=i;
+                JMenuItem it=new JMenuItem(opts[i]);it.setFont(new Font("SansSerif",Font.PLAIN,13));
+                it.setBackground(Variables.framePanelColor);it.setForeground(Variables.buttonSecondaryTextColor);
+                it.setBorder(BorderFactory.createEmptyBorder(5,12,5,12));
+                it.addMouseListener(new MouseAdapter(){
+                    @Override public void mouseEntered(MouseEvent e){it.setBackground(Variables.buttonSecondaryHoverColor);}
+                    @Override public void mouseExited(MouseEvent e){it.setBackground(Variables.framePanelColor);}
+                });
+                it.addActionListener(ev->{sel=idx;repaint();});p.add(it);
+            }
+            p.show(this,0,getHeight());
+        }
+        @Override protected void paintComponent(Graphics g){
+            Graphics2D g2=(Graphics2D)g;g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(h?Variables.buttonSecondaryHoverColor:Variables.buttonSecondaryColor);
+            g2.fill(new RoundRectangle2D.Double(0,0,getWidth()-1,getHeight()-1,10,10));
+            g2.setColor(h?Variables.frameAccentColor:Variables.frameBorderColor);g2.setStroke(new BasicStroke(1));
+            g2.draw(new RoundRectangle2D.Double(0,0,getWidth()-1,getHeight()-1,10,10));
+            g2.setFont(new Font("SansSerif",Font.PLAIN,13));FontMetrics fm=g2.getFontMetrics();
+            g2.setColor(Variables.buttonSecondaryTextColor);
+            g2.drawString(opts[sel],12,(getHeight()+fm.getAscent()-fm.getDescent())/2);
+            g2.setColor(Variables.frameSubTextColor);
+            g2.drawString("\u25BE",getWidth()-18,(getHeight()+fm.getAscent()-fm.getDescent())/2);
+        }
     }
 }

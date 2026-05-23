@@ -72,7 +72,8 @@ public class ChessClock {
         label.setPreferredSize(new Dimension(200, 80));
     }
 
-    /// Update the label with rich HTML content showing player name + time
+    /// Update the label with rich HTML content showing player name + time.
+    /// Colors are read from the active theme via Variables.
     private void updateLabel(JLabel label, int timeInSeconds, boolean isWhite, boolean isActive) {
         int minutes = timeInSeconds / 60;
         int seconds = timeInSeconds % 60;
@@ -81,32 +82,29 @@ public class ChessClock {
         String icon       = isWhite ? "\u2654" : "\u265A";
         String playerName = isWhite ? "White" : "Black";
 
-        // Color scheme based on state
+        // Theme-aware color scheme based on state
         String timeColor;
         String bgColor;
         String borderColor;
-        String nameColor = "#a09b91";
+        String nameColor = colorToHex(Variables.frameSubTextColor);
+        boolean dark = isDarkBg();
 
         if (timeInSeconds <= 10) {
-            // Critical: red pulsing
             timeColor   = "#ff3333";
-            bgColor     = "#3a1818";
+            bgColor     = dark ? "#3a1818" : "#fff0f0";
             borderColor = "#ff3333";
         } else if (timeInSeconds <= 30) {
-            // Warning: orange
             timeColor   = "#ff8844";
-            bgColor     = "#332211";
+            bgColor     = dark ? "#332211" : "#fff5e6";
             borderColor = "#ff8844";
         } else if (isActive) {
-            // Active: amber highlight
-            timeColor   = "#ffffff";
-            bgColor     = "#3a3525";
-            borderColor = "#ffaa00";
+            timeColor   = colorToHex(Variables.frameTextColor);
+            bgColor     = dark ? "#1a2a3a" : "#e8f4ff";
+            borderColor = colorToHex(Variables.frameAccentColor);
         } else {
-            // Inactive: dimmed
-            timeColor   = "#888880";
-            bgColor     = "#272522";
-            borderColor = "#413c34";
+            timeColor   = colorToHex(Variables.frameSubTextColor);
+            bgColor     = colorToHex(Variables.buttonSecondaryColor);
+            borderColor = colorToHex(Variables.frameBorderColor);
         }
 
         String html = String.format(
@@ -125,6 +123,23 @@ public class ChessClock {
         );
 
         label.setText(html);
+    }
+
+    /// Refresh both clock displays with current theme colors (call after theme switch)
+    public void refreshDisplay() {
+        updateLabel(whiteLabel, whiteTime, true, whiteActive);
+        updateLabel(blackLabel, blackTime, false, blackActive);
+    }
+
+    /// Convert a Color to CSS hex string
+    private String colorToHex(Color c) {
+        return String.format("#%02x%02x%02x", c.getRed(), c.getGreen(), c.getBlue());
+    }
+
+    /// Check if current theme is dark (bg brightness < 128)
+    private boolean isDarkBg() {
+        Color bg = Variables.frameBackGroundColor;
+        return (bg.getRed() + bg.getGreen() + bg.getBlue()) / 3 < 128;
     }
 
     /// Add time increment after a move

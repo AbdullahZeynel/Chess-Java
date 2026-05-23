@@ -161,7 +161,6 @@ public class ChessEngine {
         String Date = GetDateString.returnDateString();
         TakeGameLogs.takeLogs(FENString, Date);
 
-        System.out.println(FENString);
 
         loadPositionFromFen(FENString);
 
@@ -186,18 +185,17 @@ public class ChessEngine {
         if (isGameOver) return;
 
         String FENString = FEN.createFEN(this);
-        System.out.println(FENString);
 
         String Date = GetDateString.returnDateString();
         TakeGameLogs.takeLogs(FENString, Date);
 
-        if(isFirstGameMove)
+        if(isFirstGameMove) {
             this.timers.startWhiteTimer();
-        else {
-            /// Apply time increment to the player who just moved, then switch
-            this.timers.addIncrement(isWhiteToMove, timeIncrement);
-            this.timers.switchTimer();
         }
+
+        /// Apply time increment to the player who just moved, then switch
+        this.timers.addIncrement(isWhiteToMove, timeIncrement);
+        this.timers.switchTimer();
 
         isFirstGameMove = false;
 
@@ -519,21 +517,17 @@ public class ChessEngine {
         Piece king = findKing(isWhiteToMove);
         if (checkScanner.isGameOver(king)) {
             String finalFEN = FEN.createFEN(this);
-            System.out.println(finalFEN);
             TakeGameLogs.takeLogs(finalFEN, GetDateString.returnDateString());
             if (checkScanner.isKingChecked((new Move(this, king, king.col, king.row)))) {
                 gameOverMessage = isWhiteToMove ? "Black Wins!" : "White Wins!";
-                System.out.println(gameOverMessage);
             }  else {
                 gameOverMessage = "Stalemate!";
-                System.out.println(gameOverMessage);
             }
             isGameOver = true;
             if (timers != null) timers.setTimers();
             board.repaint();
         } else if (insufficientMaterial(true) && insufficientMaterial(false)) {
             gameOverMessage = "Insufficient Material!";
-            System.out.println(gameOverMessage);
             isGameOver = true;
             if (timers != null) timers.setTimers();
             board.repaint();
@@ -545,13 +539,11 @@ public class ChessEngine {
         if (timers == null) return;
         if (timers.isWhiteTimeOver()) {
             gameOverMessage = "Black Wins on Time!";
-            System.out.println(gameOverMessage);
             isGameOver = true;
             timers.setTimers();
             board.repaint();
         } else if (timers.isBlackTimeOver()) {
             gameOverMessage = "White Wins on Time!";
-            System.out.println(gameOverMessage);
             isGameOver = true;
             timers.setTimers();
             board.repaint();
