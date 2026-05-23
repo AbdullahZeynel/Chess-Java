@@ -70,7 +70,11 @@ cd build && java Game.GameEngine.Game
 
 | Action | Input |
 |--------|-------|
-| Select & move piece | Left click + drag |
+| Select piece | Left click on piece |
+| Move piece (click) | Click piece, then click target square |
+| Move piece (drag) | Left click + drag |
+| Switch selection | Click another friendly piece |
+| Deselect | Click empty/invalid square |
 | Highlight square | Right click |
 | Draw arrow | Right click + drag |
 | Clear highlights | Left click on empty |

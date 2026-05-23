@@ -246,6 +246,7 @@ public class CheckScanner {
      * If no legal move is found, the game is over.
      */
     public boolean isGameOver(Piece king) {
+        Piece savedSelection = engine.selectedPiece;
         for (Piece piece: pieceList)
             if(engine.sameTeam(piece, king)) {
                 engine.selectedPiece = (piece == king) ? king : null;
@@ -253,10 +254,13 @@ public class CheckScanner {
                 for(int row = 0; row < Variables.rows; row++)
                     for(int col = 0; col < Variables.cols; col++) {
                         Move move = new Move(engine, piece, col, row);
-                        if(engine.isValidMove(move))    /// Valid move found — game is not over
-                            return false;
+                        if(engine.isValidMove(move)) {
+                            engine.selectedPiece = savedSelection;
+                            return false;   /// Valid move found — game is not over
+                        }
                     }
             }
+        engine.selectedPiece = savedSelection;
         return true;    /// No legal moves — game is over (checkmate or stalemate)
     }
 }

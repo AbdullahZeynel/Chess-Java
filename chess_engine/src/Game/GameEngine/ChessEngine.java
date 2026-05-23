@@ -310,6 +310,10 @@ public class ChessEngine {
         if(isGameOver)
             return false;
 
+        /// Check board boundaries — target must be within 0-7
+        if(move.newCol < 0 || move.newCol > 7 || move.newRow < 0 || move.newRow > 7)
+            return false;
+
         /// Check turn
         if(move.piece.isWhite != isWhiteToMove)
             return false;
