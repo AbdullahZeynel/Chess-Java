@@ -265,11 +265,11 @@ public class Frame extends JFrame {
     /// Repositions time-control buttons inside the 2 category cards
     private void repositionButtons(JPanel panel, JButton[] std, JButton[] threeC) {
         int w = panel.getWidth();
-        int cardW = Math.min(320, (w - 160) / 2);
+        int cardW = Math.max(200, Math.min(320, (w - 160) / 2));
         int totalCards = 2 * cardW + 40;
         int startX = (w - totalCards) / 2;
 
-        int btnW = cardW - 40;
+        int btnW = Math.max(100, cardW - 40);
         int btnH = 48;
         int btnY0 = 230;
         int gap = 58;
@@ -285,7 +285,8 @@ public class Frame extends JFrame {
         // Reposition "Create a New Game" button
         for (Component c : panel.getComponents()) {
             if (c instanceof JButton && "Create a New Game".equals(((JButton) c).getText())) {
-                c.setBounds((w - 300) / 2, 520, 300, 50);
+                int bw = Math.min(300, w - 100);
+                c.setBounds((w - bw) / 2, 520, bw, 50);
             }
         }
     }
@@ -347,6 +348,10 @@ public class Frame extends JFrame {
         isDarkTheme = !isDarkTheme;
         Theme.setTheme(isDarkTheme ? GaziTheme.DARK : GaziTheme.LIGHT);
         getContentPane().setBackground(Variables.frameBackGroundColor);
+
+        // Recreate createNewGame so its JTextFields/JPopupMenus pick up new theme colors
+        createNewGame = new CreateNewGame(this, engine);
+        createNewGame.exitButton.addActionListener(e -> closeNewGameModal());
 
         // Refresh chess clock if in-game
         if (chessClock != null) {
@@ -460,6 +465,11 @@ public class Frame extends JFrame {
 
         this.chessClock = new ChessClock(whiteTime, blackTime, whiteLabel, blackLabel);
 
+        // Activate color selection — flip board if playing as black
+        if (startingColor.equals("black")) {
+            engine.board.isFlipped = true;
+        }
+
         // Clear everything except toolbar
         this.layeredPane.removeAll();
         this.layeredPane.add(toolbarPanel, JLayeredPane.PALETTE_LAYER);
@@ -471,17 +481,36 @@ public class Frame extends JFrame {
         int by = (getHeight() - boardSize) / 2 - 20;
         engine.board.setBounds(bx, by, boardSize, boardSize);
 
-        // Add clock labels
+        // Add clock labels — position depends on flip state
         this.layeredPane.add(whiteLabel);
         this.layeredPane.add(blackLabel);
-        whiteLabel.setBounds(bx + boardSize + 30, by + boardSize - 100, 200, 90);
-        blackLabel.setBounds(bx + boardSize + 30, by + 10, 200, 90);
+        if (engine.board.isFlipped) {
+            // Flipped: white clock on top, black on bottom
+            whiteLabel.setBounds(bx + boardSize + 30, by + 10, 200, 90);
+            blackLabel.setBounds(bx + boardSize + 30, by + boardSize - 100, 200, 90);
+        } else {
+            whiteLabel.setBounds(bx + boardSize + 30, by + boardSize - 100, 200, 90);
+            blackLabel.setBounds(bx + boardSize + 30, by + 10, 200, 90);
+        }
 
         // Back to Menu button
         JButton backButton = createPrimaryButton("\u2190 Menu");
-        backButton.setBounds(bx + boardSize + 30, by + boardSize / 2 - 25, 160, 45);
+        backButton.setBounds(bx + boardSize + 30, by + boardSize / 2 - 50, 160, 40);
         backButton.addActionListener(e -> returnToMenu());
         this.layeredPane.add(backButton);
+
+        // Flip Board button
+        JButton flipButton = createPrimaryButton("\u21C5 Flip");
+        flipButton.setBounds(bx + boardSize + 30, by + boardSize / 2, 160, 40);
+        flipButton.addActionListener(e -> {
+            engine.board.flipBoard();
+            // Swap clock label positions
+            Rectangle wBounds = whiteLabel.getBounds();
+            Rectangle bBounds = blackLabel.getBounds();
+            whiteLabel.setBounds(bBounds);
+            blackLabel.setBounds(wBounds);
+        });
+        this.layeredPane.add(flipButton);
 
         // Three Checks indicators
         if (engine instanceof ThreeChecksChess) {

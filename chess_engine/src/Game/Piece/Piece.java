@@ -85,5 +85,10 @@ public abstract class Piece implements PieceMoves {
         g2d.drawImage(sprite, xPos, yPos, null);
     }
 
+    /// Draws the piece sprite at an explicit pixel position (for flip-aware rendering)
+    public void paintAt(Graphics g2d, int px, int py) {
+        g2d.drawImage(sprite, px, py, null);
+    }
+
     // Abstract pieceMoves() is inherited from PieceMoves interface — no need to override here
 }

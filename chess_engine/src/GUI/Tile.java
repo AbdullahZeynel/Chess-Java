@@ -47,15 +47,20 @@ public class Tile {
     /// Draws a colored circle then carves out a smaller circle in the tile color,
     /// creating a ring effect.
     public void paintHighlightedSquare(Graphics g, Tile tile) {
-        Graphics2D g2d = (Graphics2D) g;
+        paintHighlightedSquareAt((Graphics2D) g, col, row);
+    }
+
+    /// Flip-aware version: paints at the given screen col/row
+    public void paintHighlightedSquareAt(Graphics2D g2d, int screenCol, int screenRow) {
+        int px = screenCol * Variables.tileSize;
+        int py = screenRow * Variables.tileSize;
 
         g2d.setColor(Variables.highlightedSquareColor);
-        g2d.fillOval(centerX, centerY, radius, radius);
+        g2d.fillOval(px, py, Variables.tileSize, Variables.tileSize);
 
         oddOrEven = getOddOrEven(col, row);
-
         g2d.setColor(oddOrEven ? Variables.whiteTileColor : Variables.blackTileColor);
-        g2d.fillOval(tile.col * Variables.tileSize + 5, tile.row * Variables.tileSize + 5, Variables.tileSize - 10, Variables.tileSize - 10);
+        g2d.fillOval(px + 5, py + 5, Variables.tileSize - 10, Variables.tileSize - 10);
     }
 
     /// Repaints the tile with a circle cutout for capture move indicators

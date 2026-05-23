@@ -37,16 +37,33 @@ public class Input extends MouseAdapter {
         this.engine = engine;
     }
 
+    /// Whether a drag is in progress (used by Board for rendering)
+    public boolean isDragging() {
+        return isDragging;
+    }
+
     /// Clamps a board coordinate to the valid range [0, 7]
     private int clampToBoard(int value) {
         return Math.max(0, Math.min(7, value));
     }
 
+    /// Converts screen pixel X to logical board column (flip-aware)
+    private int screenToCol(int pixelX) {
+        int sc = clampToBoard(pixelX / Variables.tileSize);
+        return engine.board.isFlipped ? 7 - sc : sc;
+    }
+
+    /// Converts screen pixel Y to logical board row (flip-aware)
+    private int screenToRow(int pixelY) {
+        int sr = clampToBoard(pixelY / Variables.tileSize);
+        return engine.board.isFlipped ? 7 - sr : sr;
+    }
+
     @Override
     public void mousePressed(MouseEvent e) {
-        /// Get the board coordinates of the click (clamped to board)
-        col = clampToBoard(e.getX() / Variables.tileSize);
-        row = clampToBoard(e.getY() / Variables.tileSize);
+        /// Get the logical board coordinates of the click (flip-aware)
+        col = screenToCol(e.getX());
+        row = screenToRow(e.getY());
         isDragging = false;
 
         if (SwingUtilities.isRightMouseButton(e)){
@@ -111,8 +128,8 @@ public class Input extends MouseAdapter {
         } else if (SwingUtilities.isLeftMouseButton(e)){
             if (isDragging && engine.selectedPiece != null) {
                 /// Drag-and-drop mode — try to place piece at release position
-                int col = clampToBoard(e.getX() / Variables.tileSize);
-                int row = clampToBoard(e.getY() / Variables.tileSize);
+                int col = screenToCol(e.getX());
+                int row = screenToRow(e.getY());
 
                 Move move = new Move(engine, engine.selectedPiece, col, row);
 
