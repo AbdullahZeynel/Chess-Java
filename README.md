@@ -14,55 +14,56 @@ A Java-based chess engine built with Swing, featuring a modern GUI, multiple gam
 ## Project Structure
 
 ```
-chess_engine/src/
-├── Game/
-│   ├── GameEngine/              # Core game logic
-│   │   ├── ChessEngine.java         # Main engine (moves, validation, game state)
-│   │   ├── CheckScanner.java        # Check and checkmate detection
-│   │   ├── FEN.java                 # FEN string parser and generator
-│   │   ├── Game.java                # Application entry point
-│   │   └── User/                    # Player management
-│   ├── Piece/                   # Chess pieces
-│   │   ├── Piece.java               # Abstract base class
-│   │   ├── King, Queen, Rook, Bishop, Knight, Pawn
-│   │   └── PieceMoves.java          # Movement interface
-│   └── Exceptions/              # Custom exceptions
-├── GUI/
-│   ├── Board/                   # Board rendering
-│   │   ├── Board.java               # Main board panel
-│   │   ├── ChessClock.java          # Timer display
-│   │   └── Menu/                    # Menu system (Frame, CreateNewGame)
-│   ├── Input.java               # Mouse input handler
-│   ├── Tile.java                # Tile rendering and highlights
-│   └── Arrow.java               # Arrow drawing for analysis
+src/main/
+├── java/
+│   ├── Game/
+│   │   ├── GameEngine/              # Core game logic
+│   │   │   ├── ChessEngine.java         # Main engine (moves, validation, game state)
+│   │   │   ├── CheckScanner.java        # Check and checkmate detection
+│   │   │   ├── FEN.java                 # FEN string parser and generator
+│   │   │   ├── Game.java                # Application entry point
+│   │   │   └── User/                    # Player management
+│   │   ├── Piece/                   # Chess pieces
+│   │   │   ├── Piece.java               # Abstract base class
+│   │   │   ├── King, Queen, Rook, Bishop, Knight, Pawn
+│   │   │   └── PieceMoves.java          # Movement interface
+│   │   └── Exceptions/              # Custom exceptions
+│   ├── GUI/
+│   │   ├── Board/                   # Board rendering
+│   │   │   ├── Board.java               # Main board panel
+│   │   │   ├── ChessClock.java          # Timer display
+│   │   │   └── Menu/                    # Menu system (Frame, CreateNewGame)
+│   │   ├── Input.java               # Mouse input handler
+│   │   ├── Tile.java                # Tile rendering and highlights
+│   │   └── Arrow.java               # Arrow drawing for analysis
+│   └── resources/
+│       ├── Variables.java            # Global constants and color palette
+│       ├── Theme.java                # Theme abstraction
+│       └── GaziTheme.java            # Default dark theme
+├── kotlin/                          # Kotlin source files
 └── resources/
-    ├── Variables.java            # Global constants and color palette
-    └── pieces.png                # Chess piece sprites
+    └── pieces.png                    # Chess piece sprites
 ```
 
 ## Getting Started
 
 ### Prerequisites
-- Java JDK 11 or later
+- Java JDK 21 or later
 
 ### Build & Run
+```bash
+./gradlew run
+```
+
+Or using the convenience script:
 ```bash
 bash build_and_run.sh
 ```
 
-Or manually:
+### Build JAR
 ```bash
-# Compile
-mkdir -p build
-javac -d build -sourcepath chess_engine/src \
-    chess_engine/src/Game/GameEngine/Game.java
-
-# Copy resources
-mkdir -p build/resources
-cp chess_engine/src/resources/pieces.png build/resources/
-
-# Run
-cd build && java Game.GameEngine.Game
+./gradlew jar
+java -jar build/libs/chess-engine-6.2.1.jar
 ```
 
 ## Controls
@@ -80,7 +81,8 @@ cd build && java Game.GameEngine.Game
 
 ## Technologies
 
-- **Language:** Java
+- **Language:** Java + Kotlin
+- **Build System:** Gradle (Kotlin DSL)
 - **GUI Framework:** Java Swing
 - **Architecture:** MVC-inspired with encapsulated game engine
 

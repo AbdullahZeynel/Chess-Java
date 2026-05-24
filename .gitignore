@@ -18,6 +18,14 @@ bin/
 target/
 *.class
 
+# ─── Gradle ──────────────────────────────────────────
+.gradle/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+
+# ─── Kotlin ──────────────────────────────────────────
+*.kotlin_module
+
 # ─── NetBeans ────────────────────────────────────────
 netBeans/
 nbproject/
